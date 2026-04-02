@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Alertify_App</string>
+    <string name="dashboard_title">Dashboard</string>
+    <string name="logout_button">Cerrar sesion</string>
+    <string name="logout_success">Sesion cerrada</string>
+    <string name="session_expired">Tu sesion ha expirado. Inicia sesion nuevamente.</string>
 </resources>

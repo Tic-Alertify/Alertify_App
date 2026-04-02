@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_app_name">Alertify</string>
+    <string name="auth_login_tab_text">Ingresar</string>
+    <string name="auth_register_tab_text">Registrar</string>
+    <string name="auth_hint_username_email">Correo</string>
+    <string name="auth_hint_username">Usuario</string>
+    <string name="auth_hint_email">Correo electrónico</string>
+    <string name="auth_hint_password">Contraseña</string>
+    <string name="auth_hint_confirm_password">Confirmar contraseña</string>
+    <string name="auth_button_login">Ingresar</string>
+    <string name="auth_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="auth_welcome_message">¡Bienvenido a Alertify!</string>
+    <string name="auth_registration_successful">Registro exitoso. ¡Inicia sesión!</string>
+    <string name="auth_session_expired">Tu sesión ha expirado. Inicia sesión nuevamente.</string>
+    <string name="auth_error_persist_session">No se pudo persistir la sesión</string>
+    <string name="auth_login_success">Inicio de sesión exitoso</string>
+    <string name="auth_error_empty_fields">Complete todos los campos</string>
+    <string name="auth_error_connection">Error de conexión: %1$s</string>
+    <string name="auth_error_unknown">Error desconocido</string>
+
+    <string name="auth_error_auth_invalid_credentials">Correo o contraseña incorrectos.</string>
+    <string name="auth_error_auth_account_blocked">Tu cuenta está bloqueada. Contacta al administrador.</string>
+    <string name="auth_error_auth_account_inactive">Tu cuenta está inactiva. Verifica tu estado o contacta soporte.</string>
+    <string name="auth_error_auth_validation">Los datos ingresados no son válidos. Revisa los campos.</string>
+    <string name="auth_error_auth_conflict">El recurso ya existe. Intenta con otros datos.</string>
+    <string name="auth_error_auth_server">No se pudo completar la operación. Intenta más tarde.</string>
+    <string name="auth_error_auth_network">Sin conexión. Revisa tu internet e intenta nuevamente.</string>
+    <string name="auth_error_auth_unknown">Ocurrió un error. Intenta nuevamente.</string>
+    <string name="auth_error_support_code">Código de soporte: %1$s</string>
+</resources>

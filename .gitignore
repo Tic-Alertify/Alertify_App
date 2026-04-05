@@ -1,15 +1,38 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# Archivos de compilación y caché de Gradle
+.gradle/
+build/
+*/build/
+*/*/build/
+
+# Archivos locales de configuración
 local.properties
+
+# Archivos generados por Android Studio (IDE)
+.idea/
+*.iml
+*.iws
+.cxx/
+.idea/caches/
+.idea/libraries/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/caches/build_file_checksums.ser
+.idea/modules.xml
+
+# SO y archivos basura de sistema
+.DS_Store
+Thumbs.db
+*.log
+
+# Archivos de llaves y contraseñas (Seguridad)
+*.jks
+*.keystore
+google-services.json
+
+# Caché de KSP / KAPT
+/build/generated/ksp/
+*/build/generated/ksp/

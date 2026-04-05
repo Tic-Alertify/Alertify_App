@@ -1,0 +1,16 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.RuteoSeguro" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/ruteo_purple_500</item>
+        <item name="colorPrimaryVariant">@color/ruteo_purple_700</item>
+        <item name="colorOnPrimary">@color/ruteo_white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/ruteo_teal_200</item>
+        <item name="colorSecondaryVariant">@color/ruteo_teal_700</item>
+        <item name="colorOnSecondary">@color/ruteo_black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+    </style>
+</resources>

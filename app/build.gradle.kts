@@ -1,3 +1,15 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+// Cargamos el archivo local.properties
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+val googleMapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
+
+
 // Archivo: Alertify_App/app/build.gradle.kts
 plugins {
     alias(libs.plugins.android.application)
@@ -17,6 +29,7 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["MAPS_API_KEY"] = googleMapsApiKey
     }
 
     compileOptions {
@@ -31,6 +44,8 @@ android {
 dependencies {
     implementation(project(":core"))
     implementation(project(":feature_identidad"))
+    implementation(project(":feature_ruteo"))
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -43,5 +58,9 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt.android)
+    implementation(libs.play.services.maps)
     ksp(libs.hilt.compiler)
+
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.maps.android:android-maps-utils:3.8.0")
 }

@@ -1,4 +1,4 @@
-package com.erickballas.ruteoseguro.data.model
+package com.alertify.feature_ruteo.data.model
 
 import com.google.gson.annotations.SerializedName
 

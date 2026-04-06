@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.okhttp.logging)
 
     implementation(libs.hilt.android)
+    implementation(libs.play.services.maps)
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)

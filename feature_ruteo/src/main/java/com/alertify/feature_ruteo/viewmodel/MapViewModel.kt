@@ -3,18 +3,24 @@ package com.alertify.feature_ruteo.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.erickballas.ruteoseguro.data.repository.RuteoRepository
-import com.erickballas.ruteoseguro.utils.Constants
-import com.erickballas.ruteoseguro.utils.GeoUtils
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class MapViewModel : ViewModel() {
+import com.alertify.feature_ruteo.data.repository.RuteoRepository
+import com.alertify.core.utils.Constants
+import com.alertify.core.utils.GeoUtils
 
-    private val repository = RuteoRepository()
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class MapViewModel @Inject constructor(
+    private val repository: RuteoRepository
+) : ViewModel() {
+
 
     // 1. Configuración inicial del mapa (Quito centro)
     val quitoLocation = LatLng(-0.210313, -78.488884)
@@ -53,6 +59,7 @@ class MapViewModel : ViewModel() {
     // ─── T-04: Validación de coordenadas dentro del área de Pichincha ───────
 
     fun setOrigen(latLng: LatLng) {
+        // Usamos Constants desde el :core
         if (!GeoUtils.estaDentroDelPoligono(latLng, Constants.PICHINCHA_POLYGON)) {
             _errorMessage.value = "El punto de origen está fuera del área de cobertura (Pichincha)"
             Log.w("MapViewModel", "Origen fuera de Pichincha: $latLng")
@@ -62,6 +69,7 @@ class MapViewModel : ViewModel() {
     }
 
     fun setDestino(latLng: LatLng) {
+        //  Usamos MapConstants desde el :core
         if (!GeoUtils.estaDentroDelPoligono(latLng, Constants.PICHINCHA_POLYGON)) {
             _errorMessage.value = "El destino está fuera del área de cobertura (Pichincha)"
             Log.w("MapViewModel", "Destino fuera de Pichincha: $latLng")

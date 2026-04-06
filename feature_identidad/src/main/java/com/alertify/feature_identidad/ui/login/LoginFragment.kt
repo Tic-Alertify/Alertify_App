@@ -202,15 +202,15 @@ class LoginFragment : Fragment(R.layout.auth_fragment_login) {
 
         if (isLoginMode) {
             tvLoginTab.setBackgroundResource(R.drawable.shape_toggle_button_selected)
-            tvLoginTab.setTextColor(resources.getColor(R.color.toggle_unselected, null))
+            tvLoginTab.setTextColor(resources.getColor(R.color.auth_toggle_unselected, null))
             tvRegisterTab.setBackgroundResource(R.drawable.shape_toggle_button_unselected)
-            tvRegisterTab.setTextColor(resources.getColor(R.color.toggle_selected, null))
+            tvRegisterTab.setTextColor(resources.getColor(R.color.auth_toggle_selected, null))
             etUsernameEmail.hint = getString(R.string.auth_hint_username_email)
         } else {
             tvLoginTab.setBackgroundResource(R.drawable.shape_toggle_button_unselected)
-            tvLoginTab.setTextColor(resources.getColor(R.color.toggle_selected, null))
+            tvLoginTab.setTextColor(resources.getColor(R.color.auth_toggle_selected, null))
             tvRegisterTab.setBackgroundResource(R.drawable.shape_toggle_button_selected)
-            tvRegisterTab.setTextColor(resources.getColor(R.color.toggle_unselected, null))
+            tvRegisterTab.setTextColor(resources.getColor(R.color.auth_toggle_unselected, null))
             etUsernameEmail.hint = getString(R.string.auth_hint_username)
         }
 

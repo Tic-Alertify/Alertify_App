@@ -1,9 +1,14 @@
-package com.erickballas.ruteoseguro.data.repository
+package com.alertify.feature_ruteo.data.repository
 
-import com.erickballas.ruteoseguro.data.model.RuteoRequest
-import com.erickballas.ruteoseguro.data.model.RuteoResponse
+import com.alertify.feature_ruteo.data.api.RuteoApiService
+import com.alertify.feature_ruteo.data.model.RuteoRequest
+import com.alertify.feature_ruteo.data.model.RuteoResponse
+import javax.inject.Inject
 
-class RuteoRepository {
+// @Inject constructor para que Hilt le entregue el RuteoApiService listo para usar
+class RuteoRepository @Inject constructor(
+    private val apiService: RuteoApiService
+) {
     suspend fun obtenerRutaSegura(
         origenLat: Double,
         origenLng: Double,
@@ -12,8 +17,10 @@ class RuteoRepository {
     ): Result<RuteoResponse> {
         return try {
             val request = RuteoRequest(origenLat, origenLng, destinoLat, destinoLng)
-            // Llamamos a Retrofit
-            val response = RetrofitClient.apiService.calcularRutaSegura(request)
+
+            // 🔥 Usamos el apiService inyectado en lugar de RetrofitClient
+            val response = apiService.calcularRutaSegura(request)
+
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {

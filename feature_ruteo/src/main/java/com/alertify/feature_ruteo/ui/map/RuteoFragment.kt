@@ -1,0 +1,261 @@
+@file:Suppress("DEPRECATION")
+
+package com.alertify.feature_ruteo.ui.map
+
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
+import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels // Compartiremos el ViewModel con la Activity/Dashboard
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.alertify.core.utils.Constants
+//import com.alertify.core.utils.Constants
+import com.alertify.feature_ruteo.R
+import com.alertify.feature_ruteo.viewmodel.MapViewModel
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.model.RectangularBounds
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.android.material.button.MaterialButton
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+
+@AndroidEntryPoint
+class RuteoFragment : Fragment() {
+
+    // Usamos activityViewModels para que el Dashboard en :app pueda leer ESTE MISMO ViewModel
+    private val viewModel: MapViewModel by activityViewModels()
+
+    // Herramientas de Google
+    private lateinit var placesClient: PlacesClient
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    // Componentes de la UI
+    private lateinit var etDestino: EditText
+    private lateinit var ivClearText: ImageView
+    private lateinit var btnConfirmarUbicacion: MaterialButton
+    private lateinit var btnCambiarDestino: MaterialButton
+    private lateinit var rvSugerencias: RecyclerView
+    private lateinit var placesAdapter: PlacesAdapter
+
+    private var isProgrammaticChange = false
+
+    private val requestLocationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        val coarseGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+
+        if (fineGranted || coarseGranted) {
+            obtenerUbicacionActual()
+        } else {
+            Toast.makeText(requireContext(), "Permiso de ubicación necesario", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.ruteo_fragment_map, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        initPlaces()
+        placesClient = Places.createClient(requireContext())
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+        etDestino = view.findViewById(R.id.et_destino)
+        ivClearText = view.findViewById(R.id.iv_clear_text)
+        btnConfirmarUbicacion = view.findViewById(R.id.btn_confirmar_ubicacion)
+        btnCambiarDestino = view.findViewById(R.id.btn_cambiar_destino)
+        rvSugerencias = view.findViewById(R.id.rv_sugerencias)
+
+        configurarBotonesAccion()
+        configurarBuscador()
+        observarErrores()
+        observarCarga()
+
+        // Solicitamos permisos GPS ni bien se abre el buscador
+        requestLocationPermissionLauncher.launch(
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+        )
+    }
+
+    private fun observarErrores() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.errorMessage.collect { mensaje ->
+                    if (!mensaje.isNullOrEmpty()) {
+                        Toast.makeText(requireContext(), mensaje, Toast.LENGTH_LONG).show()
+                        viewModel.clearError()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun configurarBotonesAccion() {
+        ivClearText.setOnClickListener {
+            etDestino.text.clear()
+            etDestino.isEnabled = true
+            rvSugerencias.visibility = View.GONE
+            btnConfirmarUbicacion.visibility = View.GONE
+            placesAdapter.submitList(emptyList())
+        }
+
+        btnConfirmarUbicacion.setOnClickListener {
+            etDestino.isEnabled = false
+            ivClearText.visibility = View.GONE
+            btnConfirmarUbicacion.visibility = View.GONE
+            btnCambiarDestino.visibility = View.VISIBLE
+
+            // 🔥 Aquí alimentas el ViewModel. ¡El Dashboard se encargará de dibujar cuando esto termine!
+            viewModel.solicitarRutaSegura()
+        }
+
+        btnCambiarDestino.setOnClickListener {
+            btnCambiarDestino.visibility = View.GONE
+            etDestino.text.clear()
+            etDestino.isEnabled = true
+            ivClearText.visibility = View.GONE
+            rvSugerencias.visibility = View.GONE
+            placesAdapter.submitList(emptyList())
+
+            viewModel.clearDestino()
+
+            etDestino.requestFocus()
+            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(etDestino, InputMethodManager.SHOW_IMPLICIT)
+        }
+    }
+
+    private fun configurarBuscador() {
+        placesAdapter = PlacesAdapter { prediction ->
+            isProgrammaticChange = true
+            rvSugerencias.visibility = View.GONE
+            placesAdapter.submitList(emptyList())
+
+            etDestino.setText(prediction.getPrimaryText(null).toString())
+            etDestino.clearFocus()
+            ocultarTeclado(etDestino)
+
+            btnConfirmarUbicacion.visibility = View.VISIBLE
+            obtenerCoordenadasDelLugar(prediction.placeId)
+
+            isProgrammaticChange = false
+        }
+        rvSugerencias.layoutManager = LinearLayoutManager(requireContext())
+        rvSugerencias.adapter = placesAdapter
+
+        etDestino.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {}
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (isProgrammaticChange) return
+
+                val query = s.toString()
+                ivClearText.visibility = if (query.isNotEmpty() && etDestino.isEnabled) View.VISIBLE else View.GONE
+                btnConfirmarUbicacion.visibility = View.GONE
+
+                if (query.length > 2) {
+                    buscarSugerencias(query)
+                } else {
+                    rvSugerencias.visibility = View.GONE
+                    placesAdapter.submitList(emptyList())
+                }
+            }
+        })
+    }
+
+    private fun buscarSugerencias(query: String) {
+        val request = FindAutocompletePredictionsRequest.builder()
+            .setQuery(query)
+            .setCountries("EC")
+            .setLocationRestriction(RectangularBounds.newInstance(Constants.PICHINCHA_BOUNDS))
+            .build()
+
+        placesClient.findAutocompletePredictions(request).addOnSuccessListener { response ->
+            val predicciones = response.autocompletePredictions
+            if (predicciones.isNotEmpty()) {
+                rvSugerencias.visibility = View.VISIBLE
+                placesAdapter.submitList(predicciones)
+            } else {
+                rvSugerencias.visibility = View.GONE
+            }
+        }.addOnFailureListener {
+            rvSugerencias.visibility = View.GONE
+        }
+    }
+
+    private fun obtenerCoordenadasDelLugar(placeId: String) {
+        val placeFields = listOf(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.LOCATION)
+        val request = FetchPlaceRequest.builder(placeId, placeFields).build()
+
+        placesClient.fetchPlace(request).addOnSuccessListener { response ->
+            response.place.location?.let { destino ->
+                viewModel.setDestino(destino)
+            }
+        }.addOnFailureListener {
+            Toast.makeText(requireContext(), "No se pudo obtener la ubicación", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun obtenerUbicacionActual() {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            if (location != null) {
+                val miUbicacion = LatLng(location.latitude, location.longitude)
+                viewModel.setOrigen(miUbicacion)
+            } else {
+                Toast.makeText(requireContext(), "No se detectó tu ubicación. Activa el GPS.", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun ocultarTeclado(view: View) {
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    private fun initPlaces() {
+        if (!Places.isInitialized()) {
+            val appInfo = requireContext().packageManager.getApplicationInfo(requireContext().packageName, PackageManager.GET_META_DATA)
+            val apiKey = appInfo.metaData.getString("com.google.android.geo.API_KEY")
+            if (apiKey != null) Places.initialize(requireContext(), apiKey)
+        }
+    }
+
+    private fun observarCarga() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.isLoadingRoute.collect { isLoading ->
+                    if (isLoading) {
+                        ocultarTeclado(requireView())
+                    }
+                }
+            }
+        }
+    }
+}

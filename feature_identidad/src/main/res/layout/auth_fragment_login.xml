@@ -27,7 +27,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         app:cardCornerRadius="16dp"
-        app:cardBackgroundColor="@color/card_background_translucent"
+        app:cardBackgroundColor="@color/auth_card_background_translucent"
         app:cardElevation="4dp"
         app:layout_constraintWidth_percent="0.85"
         app:layout_constraintVertical_bias="0.55"
@@ -60,7 +60,7 @@
                     android:gravity="center"
                     android:paddingVertical="8dp"
                     android:text="@string/auth_login_tab_text"
-                    android:textColor="@color/toggle_unselected"
+                    android:textColor="@color/auth_toggle_unselected"
                     android:textStyle="bold" />
 
                 <TextView
@@ -72,7 +72,7 @@
                     android:gravity="center"
                     android:paddingVertical="8dp"
                     android:text="@string/auth_register_tab_text"
-                    android:textColor="@color/toggle_selected"
+                    android:textColor="@color/auth_toggle_selected"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -96,7 +96,7 @@
                     android:minHeight="48dp"
                     android:padding="12dp"
                     android:textColor="@color/white"
-                    android:textColorHint="@color/text_hint_color" />
+                    android:textColorHint="@color/auth_text_hint_color" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -120,7 +120,7 @@
                     android:minHeight="48dp"
                     android:padding="12dp"
                     android:textColor="@color/white"
-                    android:textColorHint="@color/text_hint_color" />
+                    android:textColorHint="@color/auth_text_hint_color" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -130,7 +130,7 @@
                 android:layout_marginBottom="16dp"
                 app:boxBackgroundMode="none"
                 app:endIconMode="password_toggle"
-                app:endIconTint="@color/text_hint_color"
+                app:endIconTint="@color/auth_text_hint_color"
                 app:hintEnabled="false">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -145,7 +145,7 @@
                     android:minHeight="48dp"
                     android:padding="12dp"
                     android:textColor="@color/white"
-                    android:textColorHint="@color/text_hint_color" />
+                    android:textColorHint="@color/auth_text_hint_color" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -156,7 +156,7 @@
                 android:visibility="gone"
                 app:boxBackgroundMode="none"
                 app:endIconMode="password_toggle"
-                app:endIconTint="@color/text_hint_color"
+                app:endIconTint="@color/auth_text_hint_color"
                 app:hintEnabled="false">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -171,7 +171,7 @@
                     android:minHeight="48dp"
                     android:padding="12dp"
                     android:textColor="@color/white"
-                    android:textColorHint="@color/text_hint_color" />
+                    android:textColorHint="@color/auth_text_hint_color" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
@@ -181,7 +181,7 @@
                 android:layout_gravity="end"
                 android:layout_marginBottom="24dp"
                 android:text="@string/auth_forgot_password"
-                android:textColor="@color/text_hint_color"
+                android:textColor="@color/auth_text_hint_color"
                 android:textSize="14sp" />
 
             <Button
@@ -189,13 +189,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:backgroundTint="@color/button_background_black"
+                android:backgroundTint="@color/auth_button_background_black"
                 android:elevation="4dp"
                 android:foreground="?attr/selectableItemBackground"
                 android:minHeight="48dp"
                 android:paddingVertical="12dp"
                 android:text="@string/auth_button_login"
-                android:textColor="@color/button_text_orange" />
+                android:textColor="@color/auth_button_text_orange" />
 
             <ProgressBar
                 android:id="@+id/auth_progress_login"

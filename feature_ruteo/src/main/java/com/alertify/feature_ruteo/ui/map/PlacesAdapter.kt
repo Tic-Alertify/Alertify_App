@@ -5,8 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.erickballas.ruteoseguro.R
 import com.google.android.libraries.places.api.model.AutocompletePrediction
+import com.alertify.feature_ruteo.R
 
 class PlacesAdapter(
     private val clickListener: (AutocompletePrediction) -> Unit
@@ -21,7 +21,8 @@ class PlacesAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaceViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_lugar_busqueda, parent, false)
+        // Usamos el layout con el prefijo "ruteo_"
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.ruteo_item_lugar_busqueda, parent, false)
         return PlaceViewHolder(view)
     }
 

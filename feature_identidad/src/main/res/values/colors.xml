@@ -10,4 +10,8 @@
     <color name="auth_button_background_black">#FF000000</color>
     <color name="auth_button_text_orange">#FF9800</color>
     <color name="auth_white">#FFFFFFFF</color>
+
+    <!-- Aliases for resourcePrefix compliance if needed, though direct use is better -->
+    <color name="toggle_selected">@color/auth_toggle_selected</color>
+    <color name="toggle_unselected">@color/auth_toggle_unselected</color>
 </resources>

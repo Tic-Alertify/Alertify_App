@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Alertify</string>
+    <string-array name="incident_categories">
+        <item>Robo</item>
+        <item>Asalto</item>
+        <item>Accidente</item>
+        <item>Sospechoso </item>
+    </string-array>
+</resources>

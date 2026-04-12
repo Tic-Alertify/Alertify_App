@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph_dashboard"
+    app:startDestination="@id/nav_mapa">
+
+    <!-- MAPA: Heatmap de Reportes -->
+    <fragment
+        android:id="@+id/nav_mapa"
+        android:name="com.alertify.feature_reportes.ui.heatmap.HeatmapFragment"
+        android:label="Mapa de Reportes" />
+
+    <!-- REPORTAR: Crear nuevo reporte -->
+    <fragment
+        android:id="@+id/nav_reportar"
+        android:name="com.alertify.feature_reportes.ui.report.ReportFragment"
+        android:label="Reportar Incidente" />
+
+    <!-- HISTORIAL: Historial de reportes -->
+    <fragment
+        android:id="@+id/nav_historial"
+        android:name="com.alertify.feature_reportes.ui.history.HistoryFragment"
+        android:label="Historial" />
+
+    <!-- RUTEO: Planeador de rutas -->
+    <fragment
+        android:id="@+id/nav_ruteo"
+        android:name="com.alertify.feature_ruteo.ui.map.RuteoFragment"
+        android:label="Planeador de Rutas" />
+
+</navigation>

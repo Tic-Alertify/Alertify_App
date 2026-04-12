@@ -33,8 +33,8 @@ class MainActivity : AppCompatActivity(), LoginNavigator {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.main_nav_host) as NavHostFragment
         val navController = navHostFragment.navController
-        if (navController.currentDestination?.id != R.id.dashboardFragment) {
-            navController.navigate(R.id.action_loginFragment_to_dashboardFragment)
+        if (navController.currentDestination?.id != R.id.dashboardHostFragment) {
+            navController.navigate(R.id.action_loginFragment_to_dashboardHostFragment)
         }
     }
 
@@ -47,14 +47,14 @@ class MainActivity : AppCompatActivity(), LoginNavigator {
             is SessionEvent.SessionExpired -> {
                 if (navController.currentDestination?.id != R.id.loginFragment) {
                     Toast.makeText(this, getString(R.string.session_expired), Toast.LENGTH_LONG).show()
-                    navController.navigate(R.id.action_dashboardFragment_to_loginFragment)
+                    navController.navigate(R.id.action_dashboardHostFragment_to_loginFragment)
                 }
             }
 
             is SessionEvent.LogoutSuccess -> {
                 if (navController.currentDestination?.id != R.id.loginFragment) {
                     Toast.makeText(this, getString(R.string.logout_success), Toast.LENGTH_SHORT).show()
-                    navController.navigate(R.id.action_dashboardFragment_to_loginFragment)
+                    navController.navigate(R.id.action_dashboardHostFragment_to_loginFragment)
                 }
             }
         }

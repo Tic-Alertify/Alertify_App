@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alertify.core.network.ApiResult
 import com.alertify.core.storage.AuthSessionManager
+import com.alertify.feature_identidad.BuildConfig
 import com.alertify.feature_identidad.data.AuthRepository
 import com.alertify.feature_identidad.data.auth.AuthErrorMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,6 +31,17 @@ class LoginViewModel @Inject constructor(
     val events: SharedFlow<LoginEvent> = _events.asSharedFlow()
 
     fun checkSession() {
+        // DEBUG: Para testing sin backend del login
+        // Descomentar estas líneas para saltarse el login
+        if (BuildConfig.DEBUG) {
+            sessionManager.saveTokensSync(
+                accessToken = "debug-mock-token-12345",
+                refreshToken = "debug-mock-refresh-67890"
+            )
+            viewModelScope.launch { _events.emit(LoginEvent.NavigateToDashboard) }
+            return
+        }
+        
         if (sessionManager.isLoggedInSync()) {
             viewModelScope.launch { _events.emit(LoginEvent.NavigateToDashboard) }
         }
@@ -41,6 +53,24 @@ class LoginViewModel @Inject constructor(
         _uiState.value = LoginUiState.Loading
 
         viewModelScope.launch {
+            // DEBUG MODE: Sin backend, simula login directo
+            if (BuildConfig.DEBUG) {
+                try {
+                    // Simula tokens mock - sin validar credenciales
+                    sessionManager.saveTokensSync(
+                        accessToken = "debug-mock-token-${email.hashCode()}",
+                        refreshToken = "debug-mock-refresh-${System.currentTimeMillis()}"
+                    )
+                    _uiState.value = LoginUiState.Success
+                    Log.d(TAG, "DEBUG: Login simulado para $email")
+                    _events.emit(LoginEvent.NavigateToDashboard)
+                    return@launch
+                } catch (e: Exception) {
+                    Log.e(TAG, "DEBUG: Error simulando login", e)
+                }
+            }
+
+            // MODO PRODUCCIÓN: Llamar al backend real
             when (val result = authRepository.login(email, password)) {
                 is ApiResult.Success -> {
                     try {

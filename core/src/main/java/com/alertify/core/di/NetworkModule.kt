@@ -6,9 +6,11 @@ import com.alertify.core.BuildConfig
 import com.alertify.core.network.AuthApi
 import com.alertify.core.network.AuthInterceptor
 import com.alertify.core.network.TokenAuthenticator
+import com.alertify.core.network.socket.SocketManager
 import com.alertify.core.storage.AuthSessionManager
 import com.alertify.core.storage.SharedPrefsTokenStorage
 import com.alertify.core.storage.TokenStorage
+import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -46,6 +48,14 @@ object NetworkModule {
     ): AuthSessionManager {
         return AuthSessionManager(tokenStorage, authApi)
     }
+
+    @Provides
+    @Singleton
+    fun provideSocketManager(): SocketManager = SocketManager()
+
+    @Provides
+    @Singleton
+    fun provideGson(): Gson = Gson()
 
     @Provides
     @Singleton

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/heatmapFragment"> <fragment
+    android:id="@+id/heatmapFragment"
+    android:name="com.alertify.app.ui.heatmap.HeatmapFragment"
+    android:label="Mapa de Riesgo"
+    tools:layout="@layout/fragment_heatmap" />
+
+    <fragment
+        android:id="@+id/reportFragment"
+        android:name="com.alertify.app.ui.report.ReportFragment"
+        android:label="Reportar Incidente"
+        tools:layout="@layout/fragment_report" />
+
+    <fragment
+        android:id="@+id/historyFragment"
+        android:name="com.alertify.app.ui.history.HistoryFragment"
+        android:label="Historial"
+        tools:layout="@layout/fragment_history" />
+
+</navigation>

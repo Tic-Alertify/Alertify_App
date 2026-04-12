@@ -25,6 +25,11 @@ class AuthSessionManager @Inject constructor(
         return tokenStorage.getAccessTokenSync() != null
     }
 
+    fun saveTokensSync(accessToken: String, refreshToken: String) {
+        tokenStorage.saveAccessTokenSync(accessToken)
+        tokenStorage.saveRefreshTokenSync(refreshToken)
+    }
+
     suspend fun getAccessToken(): String? {
         return tokenStorage.getAccessToken()
     }

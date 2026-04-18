@@ -5,11 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Google Maps Fragment -->
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <!-- Loading Progress Bar -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -20,6 +23,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Heatmap Info Card (Top) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_info"
         android:layout_width="wrap_content"
@@ -54,6 +58,140 @@
                 android:textColor="@android:color/black"
                 android:textStyle="bold"
                 android:textSize="14sp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Ruteo Controls Card (Bottom) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_rutas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:cardBackgroundColor="#1A2B4C"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:animateLayoutChanges="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Planificar Ruta Segura"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textAlignment="center"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Origen Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                app:cardBackgroundColor="#F0F0F0"
+                app:cardCornerRadius="25dp"
+                app:cardElevation="0dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:id="@+id/tv_origen"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="📍 Tu ubicación actual"
+                    android:gravity="center_vertical"
+                    android:paddingStart="20dp"
+                    android:textColor="#333333"
+                    android:textSize="16sp"
+                    android:drawablePadding="12dp" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Destino Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="25dp"
+                app:cardElevation="0dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <EditText
+                        android:id="@+id/et_destino"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:autofillHints=""
+                        android:hint="¿A dónde quieres ir?"
+                        android:background="@null"
+                        android:paddingStart="20dp"
+                        android:textColor="#333333"
+                        android:textColorHint="#888888"
+                        android:textSize="16sp"
+                        android:drawableStart="@android:drawable/ic_menu_search"
+                        android:drawablePadding="12dp"
+                        android:inputType="textNoSuggestions"
+                        android:maxLines="1" />
+
+                    <ImageView
+                        android:id="@+id/iv_clear_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:paddingHorizontal="16dp"
+                        android:src="@android:drawable/ic_menu_close_clear_cancel"
+                        app:tint="#888888"
+                        android:visibility="gone"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:contentDescription="Limpiar búsqueda" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Suggestions RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_sugerencias"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"
+                android:nestedScrollingEnabled="true"/>
+
+            <!-- Solicitar Ruta Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_solicitar_ruta"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:text="Solicitar Ruta Segura"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="25dp"
+                app:backgroundTint="#4CAF50"
+                android:textColor="#FFFFFF"/>
+
+            <!-- Error Message Text -->
+            <TextView
+                android:id="@+id/tv_error_message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#FF5252"
+                android:textSize="12sp"
+                android:visibility="gone"
+                android:layout_marginTop="12dp"
+                android:textAlignment="center"/>
+
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

@@ -5,7 +5,10 @@ import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import com.alertify.core.ui.viewmodel.SharedMapViewModel
 import com.alertify.feature_reportes.R
 import com.alertify.feature_reportes.config.ConfigManager
 import com.alertify.feature_reportes.databinding.FragmentHeatmapBinding
@@ -14,8 +17,11 @@ import com.alertify.feature_reportes.viewmodel.HeatmapViewModel
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.gms.maps.model.TileOverlay
+import com.google.maps.android.PolyUtil
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class HeatmapFragment : Fragment(), OnMapReadyCallback {
@@ -24,8 +30,13 @@ class HeatmapFragment : Fragment(), OnMapReadyCallback {
     private val binding get() = _binding!!
 
     private lateinit var mMap: GoogleMap
-    private val viewModel: HeatmapViewModel by viewModels()
+    private val heatmapViewModel: HeatmapViewModel by viewModels()
+    private val sharedMapViewModel: SharedMapViewModel by activityViewModels()
     private var mTileOverlay: TileOverlay? = null
+    
+    // Estado de búsqueda de ruta
+    private var isSelectingOrigen = false
+    private var isMapClickActive = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentHeatmapBinding.inflate(inflater, container, false)
@@ -37,32 +48,81 @@ class HeatmapFragment : Fragment(), OnMapReadyCallback {
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(this)
+        
+        // Configurar listeners de ruteo
+        setupRuteoListeners()
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         setupMapStyle()
 
-        // Configuración inicial de cámara en Quito [cite: 502, 503]
+        // Configuración inicial de cámara en Quito
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(-0.1806, -78.4678), 12f))
+
+        // Listener para clicks en el mapa (seleccionar origen/destino)
+        mMap.setOnMapClickListener { latLng ->
+            if (isMapClickActive) {
+                if (isSelectingOrigen) {
+                    sharedMapViewModel.setOrigen(latLng)
+                    binding.tvOrigen.text = "📍 ${latLng.latitude.format(4)}, ${latLng.longitude.format(4)}"
+                    isSelectingOrigen = false
+                } else {
+                    sharedMapViewModel.setDestino(latLng)
+                    binding.etDestino.setText("📌 ${latLng.latitude.format(4)}, ${latLng.longitude.format(4)}")
+                }
+                isMapClickActive = false
+            }
+        }
 
         // Iniciamos la observación del Estado Único
         setupObservers()
-        viewModel.fetchMapData()
+        heatmapViewModel.fetchMapData()
+    }
+
+    private fun setupRuteoListeners() {
+        // Botón para solicitar ruta
+        binding.btnSolicitarRuta.setOnClickListener {
+            if (binding.etDestino.text.isNullOrEmpty()) {
+                showError("Por favor, ingresa un destino")
+                return@setOnClickListener
+            }
+            sharedMapViewModel.solicitarRutaSegura()
+        }
+
+        // Listener para cambiar origen (long press en map)
+        binding.tvOrigen.setOnClickListener {
+            Toast.makeText(context, "Toquea el mapa para establecer origen", Toast.LENGTH_SHORT).show()
+            isSelectingOrigen = true
+            isMapClickActive = true
+        }
+
+        // Limpiar input de destino
+        binding.ivClearText.setOnClickListener {
+            binding.etDestino.text.clear()
+            sharedMapViewModel.clearDestino()
+        }
+
+        // Observar cambios en los campos de destino
+        binding.etDestino.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus && binding.etDestino.text.isNotEmpty()) {
+                val destino = binding.etDestino.text.toString()
+                // Aquí podrías integrar autocompletado con Places API
+                Log.d("HeatmapFragment", "Destino ingresado: $destino")
+            }
+        }
     }
 
     private fun setupObservers() {
-        viewModel.uiState.observe(viewLifecycleOwner) { state ->
-
-            // 1. Manejo de Loading (Asegúrate de tener el ID en el XML)
+        // Observar datos del heatmap
+        heatmapViewModel.uiState.observe(viewLifecycleOwner) { state ->
             binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
-            // 2. Dibujar Heatmap - Eliminamos la cita del código lógico
+            
             if (state.points.isNotEmpty()) {
                 mTileOverlay?.remove()
                 mTileOverlay = SharedMapDrawer.drawHeatmap(mMap, state.points)
             }
 
-            // 3. Dibujar Marcadores - Agregamos el context requerido
             if (state.recentReports.isNotEmpty()) {
                 SharedMapDrawer.drawMarkers(
                     mMap,
@@ -72,12 +132,90 @@ class HeatmapFragment : Fragment(), OnMapReadyCallback {
                 )
             }
 
-            // 4. Manejo de Errores
             state.error?.let {
-                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+                showError(it)
+            }
+        }
+
+        // Observar cambios de error en SharedMapViewModel
+        lifecycleScope.launch {
+            sharedMapViewModel.errorMessage.collect { errorMsg ->
+                errorMsg?.let { showError(it) }
+            }
+        }
+
+        // Observar polyline de ruta
+        lifecycleScope.launch {
+            sharedMapViewModel.rutaPolyline.collect { polyline ->
+                if (!polyline.isNullOrEmpty()) {
+                    drawRutaEnMapa(polyline)
+                }
+            }
+        }
+
+        // Observar nivel de riesgo
+        lifecycleScope.launch {
+            sharedMapViewModel.nivelRiesgo.collect { nivelRiesgo ->
+                nivelRiesgo?.let { Log.d("HeatmapFragment", "Nivel de riesgo: $it") }
+            }
+        }
+
+        // Observar tiempo estimado
+        lifecycleScope.launch {
+            sharedMapViewModel.tiempoEstimado.collect { tiempo ->
+                tiempo?.let { 
+                    Toast.makeText(context, "Tiempo estimado: $it minutos", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        // Observar si está cargando
+        lifecycleScope.launch {
+            sharedMapViewModel.isLoadingRoute.collect { isLoading ->
+                binding.btnSolicitarRuta.isEnabled = !isLoading
+                binding.btnSolicitarRuta.text = 
+                    if (isLoading) "Calculando..." else "Solicitar Ruta Segura"
             }
         }
     }
+
+    private fun drawRutaEnMapa(polylineString: String) {
+        try {
+            val points = PolyUtil.decode(polylineString)
+            if (points.isNotEmpty()) {
+                mMap.clear()
+                
+                val polylineOptions = PolylineOptions()
+                    .addAll(points)
+                    .color(android.graphics.Color.GREEN)
+                    .width(8f)
+                    .geodesic(true)
+                
+                mMap.addPolyline(polylineOptions)
+                
+                // Centrar cámara en la ruta
+                val bounds = com.google.android.gms.maps.model.LatLngBounds.Builder()
+                points.forEach { bounds.include(it) }
+                mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 100))
+                
+                Toast.makeText(context, "✅ Ruta calculada exitosamente", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Log.e("HeatmapFragment", "Error dibujando ruta: ${e.message}")
+            showError("Error al mostrar la ruta")
+        }
+    }
+
+    private fun showError(message: String) {
+        binding.tvErrorMessage.visibility = View.VISIBLE
+        binding.tvErrorMessage.text = "⚠️ $message"
+        binding.tvErrorMessage.postDelayed({
+            binding.tvErrorMessage.visibility = View.GONE
+        }, 3000)
+    }
+
+    private fun Double.format(digits: Int) = "%.${digits}f".format(this)
+
     private fun setupMapStyle() {
         try {
             val success = mMap.setMapStyle(

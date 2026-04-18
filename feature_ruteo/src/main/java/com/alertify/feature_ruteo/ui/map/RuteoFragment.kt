@@ -26,9 +26,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alertify.core.utils.Constants
-//import com.alertify.core.utils.Constants
 import com.alertify.feature_ruteo.R
-import com.alertify.feature_ruteo.viewmodel.MapViewModel
+import com.alertify.core.ui.viewmodel.SharedMapViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
@@ -45,8 +44,9 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class RuteoFragment : Fragment() {
 
-    // Usamos activityViewModels para que el Dashboard en :app pueda leer ESTE MISMO ViewModel
-    private val viewModel: MapViewModel by activityViewModels()
+    // Usamos SharedMapViewModel (provisto por DashboardHostFragment)
+    // para comunicación entre Mapa y Ruteo
+    private val viewModel: SharedMapViewModel by activityViewModels()
 
     // Herramientas de Google
     private lateinit var placesClient: PlacesClient

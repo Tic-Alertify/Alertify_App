@@ -22,10 +22,4 @@
         android:name="com.alertify.feature_reportes.ui.history.HistoryFragment"
         android:label="Historial" />
 
-    <!-- RUTEO: Planeador de rutas -->
-    <fragment
-        android:id="@+id/nav_ruteo"
-        android:name="com.alertify.feature_ruteo.ui.map.RuteoFragment"
-        android:label="Planeador de Rutas" />
-
 </navigation>

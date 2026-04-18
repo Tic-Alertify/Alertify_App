@@ -5,9 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import com.alertify.mobileapp.R
+import com.alertify.core.ui.viewmodel.SharedMapViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -28,6 +30,9 @@ class DashboardHostFragment : Fragment() {
 
     private lateinit var bottomNav: BottomNavigationView
     private lateinit var dashboardNavHost: NavHostFragment
+    
+    // Instancia compartida del ViewModel para comunicación entre Mapa y Ruteo
+    private val sharedMapViewModel: SharedMapViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,5 +53,11 @@ class DashboardHostFragment : Fragment() {
 
         // Establecer icono por defecto
         bottomNav.selectedItemId = R.id.nav_mapa
+        
+        // Inicializar datos compartidos del mapa
+        // HeatmapFragment observará estos datos
+        sharedMapViewModel.loadHeatmapData()
+        sharedMapViewModel.loadRecentReports()
+        sharedMapViewModel.startListeningToLiveReports()
     }
 }

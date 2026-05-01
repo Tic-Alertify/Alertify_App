@@ -53,11 +53,5 @@ class DashboardHostFragment : Fragment() {
 
         // Establecer icono por defecto
         bottomNav.selectedItemId = R.id.nav_mapa
-        
-        // Inicializar datos compartidos del mapa
-        // HeatmapFragment observará estos datos
-        sharedMapViewModel.loadHeatmapData()
-        sharedMapViewModel.loadRecentReports()
-        sharedMapViewModel.startListeningToLiveReports()
     }
 }

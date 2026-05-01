@@ -90,12 +90,15 @@ class HeatmapViewModel @Inject constructor(
     }
 
     /**
-     * Actualiza el estado de forma thread-safe
-     * Usa postValue para actualizar desde cualquier thread
+     * Actualiza el estado de forma síncrona en el hilo principal para evitar
+     * condiciones de carrera que sobreescriben estados (ej. isLoading = false).
      */
     private fun updateState(transform: (HeatmapUiState) -> HeatmapUiState) {
-        val currentState = _uiState.value ?: HeatmapUiState()
-        _uiState.postValue(transform(currentState))
+        // Aseguramos que la actualización ocurra inmediatamente en el hilo principal
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.Main.immediate) {
+            val currentState = _uiState.value ?: HeatmapUiState()
+            _uiState.value = transform(currentState)
+        }
     }
 
     /**

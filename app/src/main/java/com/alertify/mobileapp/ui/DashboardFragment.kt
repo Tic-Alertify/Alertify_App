@@ -121,8 +121,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), OnMapReadyCallb
                         while (index < puntos.size) {
                             val endExclusive = minOf(index + maxPoints, puntos.size)
                             val segment = ArrayList<LatLng>()
-                            if (index != 0) segment.add(puntos[index - 1])
-                            segment.addAll(puntos.subList(index, endExclusive))
+                            if (index != 0) segment.add(puntos[index - 1] as LatLng)
+                            segment.addAll(puntos.subList(index, endExclusive).map { it as LatLng })
 
                             val polyline = googleMap.addPolyline(
                                 PolylineOptions().addAll(segment).width(16f).color("#1E88E5".toColorInt())
@@ -149,6 +149,35 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), OnMapReadyCallb
                     } else {
                         layoutLoading.visibility = View.GONE
                     }
+                }
+            }
+        }
+
+        // Sprint 4: Navegar al incidente cuando el usuario toca una notificación push
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                ruteoViewModel.alertLocation.collect { alertLatLng ->
+                    alertLatLng ?: return@collect
+                    if (!::googleMap.isInitialized) return@collect
+
+                    // Centrar el mapa con zoom alto para ver el incidente
+                    googleMap.animateCamera(
+                        CameraUpdateFactory.newLatLngZoom(alertLatLng, 17f)
+                    )
+
+                    // Marcador rojo de alerta de seguridad
+                    googleMap.addMarker(
+                        MarkerOptions()
+                            .position(alertLatLng)
+                            .title("⚠️ Alerta de Seguridad")
+                            .snippet("Incidente validado cerca de tu ubicación")
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                    )?.showInfoWindow()
+
+                    // Consumir el evento para que no se repita al rotar pantalla
+                    ruteoViewModel.consumeAlertLocation()
+
+                    Log.d("DashboardFragment", "Mapa centrado en alerta push: $alertLatLng")
                 }
             }
         }

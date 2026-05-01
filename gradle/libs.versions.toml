@@ -1,8 +1,13 @@
 [versions]
 agp = "8.9.1"
-kotlin = "2.1.0"
-ksp = "2.1.0-1.0.29"
-hilt = "2.51.1"
+# ─── Tripleta Kotlin/KSP/Hilt ─────────────────────────────────────────────────
+# KSP DEBE coincidir EXACTAMENTE con Kotlin. Hilt 2.56.1 soporta metadata 2.1.x
+# y NO requiere AGP 9+ (Hilt 2.57+ sí lo requiere, incompatible con agp=8.9.1).
+# Si Android Studio genera metadata 2.2.0, ir a: Settings → Kotlin →
+# desmarcar "Use Kotlin bundled with plugin" para usar esta versión del proyecto.
+kotlin = "2.1.21"
+ksp    = "2.1.21-2.0.1"
+hilt   = "2.56.1"
 
 coreKtx = "1.13.1"
 appcompat = "1.7.1"

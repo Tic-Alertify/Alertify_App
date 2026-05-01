@@ -16,6 +16,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    // Sprint 4: Procesa google-services.json para Firebase
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -66,13 +68,24 @@ dependencies {
 
     implementation(platform("com.google.firebase:firebase-bom:32.8.1"))
     implementation("com.google.firebase:firebase-messaging-ktx")
-    // Hilt
-    implementation(libs.hilt.android)
-    implementation(libs.play.services.maps)
-    ksp(libs.hilt.compiler)
 
-    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    // Sprint 4: .await() en corrutinas para Firebase token y FusedLocationClient
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+    // Sprint 4: FusedLocationProviderClient
+    implementation(libs.play.services.location)
+
+    // Retrofit — necesario en :app porque MainActivity y AlertifyMessagingService
+    // usan ReportApiService que retorna retrofit2.Response (no es transitivo con 'implementation')
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+
+    // android-maps-utils — DashboardFragment.kt (en :app) usa PolyUtil directamente
     implementation("com.google.maps.android:android-maps-utils:3.8.0")
+    implementation(libs.play.services.maps)
+
+    // Hilt — @AndroidEntryPoint en MainActivity y AlertifyMessagingService
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
     // Testing
     testImplementation(libs.junit)

@@ -53,9 +53,15 @@ class ReportHistoryAdapter(private var reports: List<ReportResponse>) :
 
     private fun formatReportDate(rawDate: String?): String {
         return try {
-            val sdfIn = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply { timeZone = TimeZone.getTimeZone("UTC") }
+            val sdfIn = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply { 
+                timeZone = TimeZone.getTimeZone("UTC") 
+            }
             val date = sdfIn.parse(rawDate ?: "")
-            val sdfOut = SimpleDateFormat("d MMM - HH:mm", Locale.getDefault()).apply { timeZone = TimeZone.getDefault() }
+            
+            // Buena Práctica: Forzar zona horaria de Ecuador y Locale en Español para meses
+            val sdfOut = SimpleDateFormat("d MMM - HH:mm", Locale("es", "EC")).apply { 
+                timeZone = TimeZone.getTimeZone("America/Guayaquil") 
+            }
             date?.let { sdfOut.format(it) } ?: "Fecha N/A"
         } catch (e: Exception) { "Formato error" }
     }

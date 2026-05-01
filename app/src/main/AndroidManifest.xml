@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Requerido en Android 13+ (API 33) para mostrar notificaciones push -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".AlertifyApp" android:allowBackup="true"
@@ -30,6 +32,20 @@
         </intent-filter>
         </activity>
 
+        <!--
+            Sprint 4 — T15: Receptor de Notificaciones Push FCM
+            Escucha eventos de Firebase Cloud Messaging para:
+              - Generar alertas visuales y sonoras cuando hay un incidente cercano
+              - Registrar/actualizar el token FCM cuando Firebase lo rota
+        -->
+        <service
+            android:name=".AlertifyMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
     </application>
 
-</manifest>
+</manifest>

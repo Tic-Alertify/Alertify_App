@@ -50,6 +50,29 @@ class MapViewModel @Inject constructor(
         _errorMessage.value = null
     }
 
+    // ─── Sprint 4: Navegación desde Notificación Push ─────────────────────────
+
+    /**
+     * Coordenada del incidente recibido por push.
+     * MainActivity la escribe cuando el usuario toca una notificación de alerta.
+     * DashboardFragment la observa para centrar el mapa automáticamente.
+     *
+     * Se usa null como "ya consumido" — el Fragment llama consumeAlertLocation()
+     * tras centrar el mapa para que no se re-centre en cada recomposición.
+     */
+    private val _alertLocation = MutableStateFlow<LatLng?>(null)
+    val alertLocation: StateFlow<LatLng?> = _alertLocation.asStateFlow()
+
+    /** Llamar desde MainActivity cuando llega un intent de alerta push */
+    fun setAlertLocation(lat: Double, lon: Double) {
+        _alertLocation.value = LatLng(lat, lon)
+    }
+
+    /** Llamar desde DashboardFragment tras centrar el mapa (consume el evento) */
+    fun consumeAlertLocation() {
+        _alertLocation.value = null
+    }
+
     /** Resetea el destino para volver al flujo de búsqueda */
     fun clearDestino() {
         _coordenadaDestino.value = null

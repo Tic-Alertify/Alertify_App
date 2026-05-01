@@ -36,3 +36,87 @@ google-services.json
 # Caché de KSP / KAPT
 /build/generated/ksp/
 */build/generated/ksp/
+
+
+# C:/Users/rocha/OneDrive/Documentos/fron-alertify-program/Alertify_App/.gitignore
+
+## --- COMPILACIÓN Y SALIDAS ---
+*.apk
+*.ap_
+*.bundle
+*.dex
+*.class
+bin/
+gen/
+out/
+build/
+*/build/
+*/*/build/
+.gradle/
+.kotlin/
+/build/generated/ksp/
+*/build/generated/ksp/
+
+## --- CONFIGURACIÓN LOCAL Y SECRETOS ---
+# Contiene la ruta del SDK y llaves de API locales
+local.properties
+secrets.properties
+.externalNativeBuild
+.cxx/
+captures/
+
+## --- SEGURIDAD (LLAVES) ---
+# NUNCA subir archivos de firma al repositorio
+*.jks
+*.keystore
+*.p12
+*.key
+# google-services.json (Opcional: ignorar si contiene info muy sensible)
+google-services.json
+
+## --- ANDROID STUDIO / INTELIJ ---
+## --- ANDROID STUDIO / INTELIJ ---
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/libraries/
+.idea/caches/
+.idea/vcs.xml
+.idea/modules.xml
+.idea/deploymentTargetSelector.xml
+*.iml
+*.iws
+*.ipr
+atlassian-ide-plugin.xml
+.navigation/
+
+## --- DOCUMENTACIÓN Y ARCHIVOS NO DESEADOS ---
+# Evitar subir manuales pesados o notas temporales
+*.pdf
+*.docx
+*.xlsx
+*.pptx
+*.doc
+*.xls
+*.csv
+# Archivos de diseño temporales o notas
+*.bak
+*.tmp
+*.temp
+notes.txt
+TODO.md
+!README.md
+
+## --- ARCHIVOS DE SISTEMA ---
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+desktop.ini
+
+## --- OTROS ---
+.externalNativeBuild/
+.cxx/
+ndk-stack.visualizers/

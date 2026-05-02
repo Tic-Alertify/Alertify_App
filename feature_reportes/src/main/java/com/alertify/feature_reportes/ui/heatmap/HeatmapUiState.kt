@@ -7,5 +7,6 @@ data class HeatmapUiState(
     val isLoading: Boolean = false,
     val points: List<HeatmapPoint> = emptyList(),
     val recentReports: List<ReportResponse> = emptyList(),
+    val totalGlobalReports: Int = 0,
     val error: String? = null
 )

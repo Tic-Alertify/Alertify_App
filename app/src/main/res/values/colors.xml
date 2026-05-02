@@ -7,4 +7,16 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Colores Corporativos Alertify -->
+    <color name="alertify_primary">#213A66</color>
+    <color name="alertify_primary_light">#35528A</color>
+    <color name="alertify_background">#FFFFFF</color>
+    <color name="alertify_text_light">#FFFFFF</color>
+    <color name="alertify_text_dark">#333333</color>
+    <color name="alertify_accent">#4CAF50</color>
+    
+    <!-- Colores para Bottom Navigation -->
+    <color name="bottom_nav_active">#FFFFFF</color>
+    <color name="bottom_nav_inactive">#8FA5CA</color>
 </resources>

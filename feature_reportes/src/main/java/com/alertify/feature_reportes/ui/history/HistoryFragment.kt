@@ -86,8 +86,10 @@ class HistoryFragment : Fragment(), OnMapReadyCallback {
         viewModel.heatmapPoints.observe(viewLifecycleOwner) { resource ->
             // Aquí si manejamos el recurso para ver el estado de carga del mapa de calor
             if (resource is com.alertify.feature_reportes.utils.Resource.Success) {
-                mTileOverlay?.remove()
-                mTileOverlay = SharedMapDrawer.drawHeatmap(mMap, resource.data ?: emptyList())
+                if (::mMap.isInitialized) {
+                    mTileOverlay?.remove()
+                    mTileOverlay = SharedMapDrawer.drawHeatmap(mMap, resource.data ?: emptyList())
+                }
             }
         }
     }

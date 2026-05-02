@@ -54,7 +54,7 @@
                 android:id="@+id/tvTotalReports"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Iniciando análisis..."
+                android:text="Calculando reportes..."
                 android:textColor="@android:color/black"
                 android:textStyle="bold"
                 android:textSize="14sp" />

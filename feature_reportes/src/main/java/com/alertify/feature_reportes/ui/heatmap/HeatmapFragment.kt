@@ -118,6 +118,11 @@ class HeatmapFragment : Fragment(), OnMapReadyCallback {
         heatmapViewModel.uiState.observe(viewLifecycleOwner) { state ->
             binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
             
+            // Actualizar contador global de reportes aprobados
+            if (!state.isLoading) {
+                binding.tvTotalReports.text = "Reportes aprobados globales: ${state.totalGlobalReports}"
+            }
+
             if (state.points.isNotEmpty()) {
                 mTileOverlay?.remove()
                 mTileOverlay = SharedMapDrawer.drawHeatmap(mMap, state.points)
@@ -138,14 +143,14 @@ class HeatmapFragment : Fragment(), OnMapReadyCallback {
         }
 
         // Observar cambios de error en SharedMapViewModel
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             sharedMapViewModel.errorMessage.collect { errorMsg ->
                 errorMsg?.let { showError(it) }
             }
         }
 
         // Observar polyline de ruta
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             sharedMapViewModel.rutaPolyline.collect { polyline ->
                 if (!polyline.isNullOrEmpty()) {
                     drawRutaEnMapa(polyline)
@@ -154,14 +159,14 @@ class HeatmapFragment : Fragment(), OnMapReadyCallback {
         }
 
         // Observar nivel de riesgo
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             sharedMapViewModel.nivelRiesgo.collect { nivelRiesgo ->
                 nivelRiesgo?.let { Log.d("HeatmapFragment", "Nivel de riesgo: $it") }
             }
         }
 
         // Observar tiempo estimado
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             sharedMapViewModel.tiempoEstimado.collect { tiempo ->
                 tiempo?.let { 
                     Toast.makeText(context, "Tiempo estimado: $it minutos", Toast.LENGTH_SHORT).show()
@@ -170,11 +175,13 @@ class HeatmapFragment : Fragment(), OnMapReadyCallback {
         }
 
         // Observar si está cargando
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             sharedMapViewModel.isLoadingRoute.collect { isLoading ->
-                binding.btnSolicitarRuta.isEnabled = !isLoading
-                binding.btnSolicitarRuta.text = 
-                    if (isLoading) "Calculando..." else "Solicitar Ruta Segura"
+                if (_binding != null) {
+                    binding.btnSolicitarRuta.isEnabled = !isLoading
+                    binding.btnSolicitarRuta.text = 
+                        if (isLoading) "Calculando..." else "Solicitar Ruta Segura"
+                }
             }
         }
     }
@@ -207,10 +214,14 @@ class HeatmapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun showError(message: String) {
-        binding.tvErrorMessage.visibility = View.VISIBLE
-        binding.tvErrorMessage.text = "⚠️ $message"
-        binding.tvErrorMessage.postDelayed({
-            binding.tvErrorMessage.visibility = View.GONE
+        if (_binding == null) return
+        val errorView = binding.tvErrorMessage
+        errorView.visibility = View.VISIBLE
+        errorView.text = "⚠️ $message"
+        errorView.postDelayed({
+            if (_binding != null) {
+                errorView.visibility = View.GONE
+            }
         }, 3000)
     }
 

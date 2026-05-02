@@ -5,64 +5,81 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"> <com.google.android.material.card.MaterialCardView
-    android:id="@+id/header_card"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="16dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="4dp"
-    app:cardBackgroundColor="@color/primary_dark"
-    app:layout_constraintTop_toTopOf="parent">
+    android:background="@color/alertify_background">
 
-    <Button
-        android:id="@+id/btnToggleView"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:text="📋 Ver en Lista"
-        android:textColor="@android:color/white"
-        android:textSize="14sp"
-        app:icon="@drawable/ic_history"
-        app:iconTint="@android:color/white" />
-</com.google.android.material.card.MaterialCardView>
-
+    <!-- El mapa ocupa toda la pantalla de inicio a fin -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/map_container"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/header_card"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="match_parent"
         tools:layout="@layout/dummy_map" />
 
+    <!-- Capa blanca para la lista (se superpone cuando está activa) -->
     <FrameLayout
         android:id="@+id/list_container"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:visibility="gone"
-        android:background="@android:color/white"
-        app:layout_constraintTop_toBottomOf="@id/header_card"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:background="@android:color/transparent">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvHistory"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:padding="8dp"
+            android:paddingTop="80dp"
+            android:paddingBottom="16dp"
             tools:listitem="@layout/item_report" />
     </FrameLayout>
 
-    <ProgressBar
-        android:id="@+id/progressBar"
+    <!-- Botón Moderno y Flotante (Tipo Pill) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/header_card"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/alertify_primary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/btnToggleView"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="24dp"
+            android:text="📋 Ver Lista de Reportes"
+            android:textColor="@color/alertify_text_light"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            app:iconTint="@color/alertify_text_light" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Loading Indicator Central -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardLoading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
+        app:cardCornerRadius="50dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:strokeWidth="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+        
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="12dp"
+            android:indeterminateTint="@color/alertify_primary" />
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -31,11 +31,11 @@ class ReportRepository @Inject constructor(
             if (response.isSuccessful) {
                 emit(Resource.Success(response.body()?.points ?: emptyList()))
             } else {
-                emit(Resource.Error("Error del servidor: ${response.code()}"))
+                emit(Resource.Error("No se pudo cargar el mapa de incidentes. Intenta más tarde."))
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error obteniendo heatmap data", e)
-            emit(Resource.Error("Fallo de red: ${e.message}"))
+            emit(Resource.Error("Revisa tu conexión a internet para ver el mapa actualizado."))
         }
     }
 
@@ -49,11 +49,11 @@ class ReportRepository @Inject constructor(
             if (response.isSuccessful) {
                 emit(Resource.Success(response.body() ?: emptyList()))
             } else {
-                emit(Resource.Error("Error al obtener reportes"))
+                emit(Resource.Error("No pudimos cargar los reportes recientes."))
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error obteniendo reportes validados", e)
-            emit(Resource.Error(e.message ?: "Error desconocido"))
+            emit(Resource.Error("Revisa tu conexión a internet."))
         }
     }
 
@@ -67,15 +67,19 @@ class ReportRepository @Inject constructor(
             if (response.isSuccessful) {
                 emit(Resource.Success(response.body() ?: emptyMap<String, Any>()))
             } else {
-                emit(Resource.Error("Error al reportar: ${response.message()}"))
+                if (response.code() == 400) {
+                    emit(Resource.Error("Estás enviando reportes muy rápido o duplicados en esta zona. Por favor, espera."))
+                } else {
+                    emit(Resource.Error("Hubo un problema al procesar tu reporte. Intenta nuevamente."))
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error creando reporte", e)
-            emit(Resource.Error("Verifica tu conexión a internet"))
+            emit(Resource.Error("Parece que no tienes conexión a internet. Revisa tu red."))
         }
     }.catch { e ->
         Log.e(TAG, "Excepción en createReport", e)
-        emit(Resource.Error("Error inesperado"))
+        emit(Resource.Error("Ocurrió un error inesperado en la aplicación."))
     }
 
 
@@ -112,11 +116,11 @@ class ReportRepository @Inject constructor(
             if (response.isSuccessful) {
                 emit(Resource.Success(response.body() ?: emptyList()))
             } else {
-                emit(Resource.Error("Error obteniendo historial"))
+                emit(Resource.Error("No pudimos cargar tu historial de reportes."))
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error obteniendo reportes del usuario", e)
-            emit(Resource.Error("Fallo de conexión: ${e.message}"))
+            emit(Resource.Error("No hay conexión para cargar tu historial."))
         }
     }
 

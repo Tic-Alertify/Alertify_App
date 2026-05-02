@@ -11,6 +11,9 @@ import com.google.android.gms.maps.model.*
 import com.google.maps.android.heatmaps.Gradient
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.TextView
 
 object SharedMapDrawer {
     private val currentMarkers = mutableMapOf<Int, Marker>()
@@ -27,14 +30,7 @@ object SharedMapDrawer {
         }
         canvas.drawCircle(size / 2f, size / 2f, size / 2f, paint)
 
-        val borderPaint = Paint().apply {
-            color = Color.WHITE
-            style = Paint.Style.STROKE
-            strokeWidth = 5f
-            isAntiAlias = true
-        }
-        canvas.drawCircle(size / 2f, size / 2f, (size / 2f) - 2.5f, borderPaint)
-
+        // Borde blanco eliminado para mantener el pin limpio y con fondo transparente respecto al mapa
         val iconDrawable = ContextCompat.getDrawable(context, resourceId)
         iconDrawable?.let {
             val margin = 32
@@ -44,7 +40,21 @@ object SharedMapDrawer {
         return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
+    private fun setupCustomInfoWindow(mMap: GoogleMap, context: Context) {
+        mMap.setInfoWindowAdapter(object : GoogleMap.InfoWindowAdapter {
+            override fun getInfoWindow(marker: Marker): View? = null // Usa el marco por defecto pero contenido custom
+
+            override fun getInfoContents(marker: Marker): View {
+                val view = LayoutInflater.from(context).inflate(R.layout.layout_info_window, null)
+                view.findViewById<TextView>(R.id.tvInfoTitle).text = marker.title
+                view.findViewById<TextView>(R.id.tvInfoSnippet).text = marker.snippet
+                return view
+            }
+        })
+    }
+
     fun drawMarkers(mMap: GoogleMap, reports: List<ReportResponse>, currentUserId: Int, context: Context) {
+        setupCustomInfoWindow(mMap, context)
         val reportIds = reports.map { it.id }.toSet()
         currentMarkers.keys.filter { it !in reportIds }.forEach { id ->
             currentMarkers[id]?.remove()

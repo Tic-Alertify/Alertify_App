@@ -8,24 +8,33 @@
     android:layout_marginHorizontal="16dp"
     android:layout_marginVertical="8dp"
     app:cardCornerRadius="16dp"
-    app:cardElevation="2dp"
-    app:strokeColor="#213A66"
-    app:strokeWidth="1.5dp"
-    app:cardBackgroundColor="#F1F8E9">
+    app:cardElevation="6dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/alertify_background">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="14dp"
+        android:padding="16dp"
         android:animateLayoutChanges="true">
 
-        <ImageView
-            android:id="@+id/imgIcon"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/icon_container"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/ic_alert"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#F0F4F8"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
+            <ImageView
+                android:id="@+id/imgIcon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_alert"
+                app:tint="@color/alertify_primary" />
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/tvTitle"
@@ -34,11 +43,11 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="8dp"
             android:text="Reporte de Robo"
-            android:textColor="@android:color/black"
-            android:textSize="17sp"
+            android:textColor="@color/alertify_text_dark"
+            android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/cardStatus"
-            app:layout_constraintStart_toEndOf="@id/imgIcon"
+            app:layout_constraintStart_toEndOf="@id/icon_container"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -47,22 +56,45 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:text="Hoy 10:30 am"
-            android:textColor="#616161"
-            android:textSize="12sp"
+            android:textColor="#888888"
+            android:textSize="13sp"
             app:layout_constraintStart_toStartOf="@id/tvTitle"
             app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#E8F5E9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/tvStatusBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="12dp"  
+                android:paddingVertical="6dp"     
+                android:text="VALIDADO"
+                android:textColor="#2E7D32"
+                android:textSize="11sp"           
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/tvDescription"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="12dp"
             android:text="Cargando detalles del reporte..."
-            android:textColor="#333333"
+            android:textColor="#555555"
             android:textSize="14sp"
             android:maxLines="2"
             android:ellipsize="end"
-            android:lineSpacingExtra="3dp"
+            android:lineSpacingExtra="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/tvTitle"
             app:layout_constraintTop_toBottomOf="@id/tvDate" />
@@ -73,32 +105,10 @@
             android:layout_height="24dp"
             android:layout_marginTop="8dp"
             android:src="@drawable/ic_chevron_down"
-            app:tint="#213A66"
+            app:tint="#B0BEC5"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvDescription" />
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#A5FF70"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <TextView
-                android:id="@+id/tvStatusBadge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="16dp"  android:paddingVertical="8dp"     android:text="VALIDADO"
-                android:textColor="@android:color/white"
-                android:textSize="12sp"           android:textStyle="bold"
-                android:letterSpacing="0.05"
-                android:shadowColor="#40000000"   android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="2" />
-        </com.google.android.material.card.MaterialCardView>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

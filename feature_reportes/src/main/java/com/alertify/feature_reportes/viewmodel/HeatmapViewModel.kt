@@ -51,12 +51,14 @@ class HeatmapViewModel @Inject constructor(
         viewModelScope.launch {
             repository.getValidatedReports().collect { resource ->
                 if (resource is Resource.Success) {
+                    val allGlobalReports = resource.data
+                    val totalCount = allGlobalReports.size
                     val weekAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000)
-                    val filtered = resource.data.filter {
+                    val filtered = allGlobalReports.filter {
                         parseDate(it.createdAt) > weekAgo
                     }
-                    Log.d(TAG, "Reportes recientes cargados: ${filtered.size}")
-                    updateState { it.copy(recentReports = filtered) }
+                    Log.d(TAG, "Reportes totales: $totalCount | Recientes: ${filtered.size}")
+                    updateState { it.copy(recentReports = filtered, totalGlobalReports = totalCount) }
                 } else if (resource is Resource.Error) {
                     Log.e(TAG, "Error reportes: ${resource.message}")
                 }

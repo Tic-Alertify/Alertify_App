@@ -22,7 +22,6 @@ import com.alertify.feature_reportes.viewmodel.ReportViewModel
 import com.alertify.feature_reportes.viewmodel.MapViewModel
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.SphericalUtil
@@ -63,30 +62,22 @@ class ReportFragment : Fragment(), OnMapReadyCallback {
 
         setupUI()
         setupObservers()
-        setupSpinner()
-        setupBottomSheet()
         setupKeyboardActions()
     }
 
     private fun setupKeyboardActions() {
         binding.etDescription.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
                 hideKeyboard()
                 binding.etDescription.clearFocus()
                 true
             } else false
         }
-        binding.root.setOnClickListener { hideKeyboard() }
-    }
-
-    private fun setupSpinner() {
-        val adapter = ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.incident_categories,
-            android.R.layout.simple_spinner_item
-        )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerIncidentType.adapter = adapter
+        // Cerrar al tocar fuera del contenedor principal
+        binding.root.setOnClickListener { 
+            hideKeyboard() 
+            binding.etDescription.clearFocus()
+        }
     }
 
     private fun setupUI() {
@@ -148,6 +139,11 @@ class ReportFragment : Fragment(), OnMapReadyCallback {
             override fun onMarkerDrag(marker: Marker) {}
             override fun onMarkerDragEnd(marker: Marker) { validateMarkerDistance(marker) }
         })
+        
+        mMap.setOnMapClickListener {
+            hideKeyboard()
+            binding.etDescription.clearFocus()
+        }
     }
 
     private fun validateMarkerDistance(marker: Marker) {
@@ -198,25 +194,20 @@ class ReportFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    private fun setupBottomSheet() {
-        val behavior = BottomSheetBehavior.from(binding.reportPanel)
-        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-                    hideKeyboard()
-                    binding.fabMyLocation.hide()
-                } else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
-                    binding.fabMyLocation.show()
-                }
-            }
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                binding.fabMyLocation.alpha = 1 - slideOffset
-            }
-        })
-    }
-
     private fun sendValidatedReport() {
         val desc = binding.etDescription.text.toString().trim()
+
+        val typeId = when (binding.chipGroupIncidentType.checkedChipId) {
+            R.id.chipRobo -> 1
+            R.id.chipAsalto -> 2
+            R.id.chipSospechoso -> 3
+            else -> -1
+        }
+
+        if (typeId == -1) {
+            showFeedback("Selecciona la categoría del incidente", true)
+            return
+        }
 
         // ✅ VALIDACIONES PROFESIONALES
         if (desc.isEmpty()) {
@@ -224,14 +215,14 @@ class ReportFragment : Fragment(), OnMapReadyCallback {
             return
         }
 
-        if (desc.length > 250) {
-            binding.etDescription.error = "Máximo 250 caracteres"
+        if (desc.length > 100) {
+            binding.etDescription.error = "Máximo 100 caracteres"
             return
         }
 
         reportViewModel.sendReport(
             userId = ConfigManager.currentUserId,
-            typeId = binding.spinnerIncidentType.selectedItemPosition + 1,
+            typeId = typeId,
             desc = desc,
             lat = draggableMarker?.position?.latitude ?: 0.0,
             lon = draggableMarker?.position?.longitude ?: 0.0
@@ -246,13 +237,12 @@ class ReportFragment : Fragment(), OnMapReadyCallback {
     private fun showFeedback(msg: String, isError: Boolean) {
         binding.cardFeedback.visibility = View.VISIBLE
         binding.tvFeedbackMessage.text = msg
+        binding.tvFeedbackMessage.setTextColor(Color.WHITE) // Siempre blanco por legibilidad
 
         if (isError) {
-            binding.cardFeedback.setCardBackgroundColor(Color.RED)
-            binding.tvFeedbackMessage.setTextColor(Color.WHITE)
+            binding.cardFeedback.setCardBackgroundColor(Color.parseColor("#D32F2F")) // Rojo material
         } else {
-            binding.cardFeedback.setCardBackgroundColor(Color.parseColor("#213A66"))
-            binding.tvFeedbackMessage.setTextColor(Color.parseColor("#FF9800"))
+            binding.cardFeedback.setCardBackgroundColor(Color.parseColor("#213A66")) // Azul corporativo (Éxito/Neutral)
         }
 
         binding.cardFeedback.postDelayed({
@@ -266,6 +256,7 @@ class ReportFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onDestroyView() {
+        hideKeyboard()
         super.onDestroyView()
         _binding = null
     }

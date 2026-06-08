@@ -24,7 +24,8 @@ class RuteoRepository @Inject constructor(
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Error HTTP: ${response.code()} - ${response.message()}"))
+                val errorStr = response.errorBody()?.string() ?: response.message()
+                Result.failure(Exception("Error HTTP: ${response.code()} - $errorStr"))
             }
         } catch (e: Exception) {
             Result.failure(Exception("Error de red: ${e.message}"))

@@ -21,10 +21,17 @@ android {
     buildFeatures {
         viewBinding = true
         dataBinding = true
+        buildConfig = true
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "BASE_URL", "\"https://trvc410l-3000.brs.devtunnels.ms/\"")
+            buildConfigField("String", "SOCKET_URL", "\"https://trvc410l-3000.brs.devtunnels.ms/\"")
+        }
         release {
+            buildConfigField("String", "BASE_URL", "\"https://api.reportes.alertify.com/\"")
+            buildConfigField("String", "SOCKET_URL", "\"https://api.reportes.alertify.com\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

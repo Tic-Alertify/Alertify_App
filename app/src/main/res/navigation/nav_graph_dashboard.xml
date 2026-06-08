@@ -4,11 +4,11 @@
     android:id="@+id/nav_graph_dashboard"
     app:startDestination="@id/nav_mapa">
 
-    <!-- MAPA: Heatmap de Reportes -->
+    <!-- MAPA: Dashboard principal con Ruteo + Heatmap -->
     <fragment
         android:id="@+id/nav_mapa"
-        android:name="com.alertify.feature_reportes.ui.heatmap.HeatmapFragment"
-        android:label="Mapa de Reportes" />
+        android:name="com.alertify.mobileapp.ui.DashboardFragment"
+        android:label="Mapa" />
 
     <!-- REPORTAR: Crear nuevo reporte -->
     <fragment

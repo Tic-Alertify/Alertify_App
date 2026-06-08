@@ -1,10 +1,15 @@
 package com.alertify.mobileapp.ui
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
@@ -17,8 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.alertify.feature_reportes.utils.SharedMapDrawer
 import com.alertify.feature_ruteo.viewmodel.MapViewModel as RuteoViewModel
-import com.alertify.feature_reportes.viewmodel.MapViewModel as ReportesViewModel
-import com.alertify.feature_reportes.utils.Resource
+import com.alertify.feature_reportes.viewmodel.HeatmapViewModel
 import com.alertify.feature_reportes.config.ConfigManager
 import com.alertify.mobileapp.R
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -38,7 +42,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), OnMapReadyCallb
 
     // Hilt nos da los ViewModels necesarios para Ruteo y Reportes
     private val ruteoViewModel: RuteoViewModel by activityViewModels()
-    private val reportesViewModel: ReportesViewModel by activityViewModels()
+    private val heatmapViewModel: HeatmapViewModel by activityViewModels()
 
     private var origenMarker: Marker? = null
     private var destinoMarker: Marker? = null
@@ -47,6 +51,16 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), OnMapReadyCallb
 
     private val routeBaseColor = "#1E88E5".toColorInt()
     private val routeWidth = 16f
+
+    private var rutaPuntos: List<LatLng> = emptyList()
+    private var lastRouteIndex = 0
+    private val routeProgressToleranceMeters = 60.0
+    private val routeProgressMinIndexStep = 1
+    private val routeProgressFallbackMaxDistanceMeters = 120f
+    private val routeProgressSearchWindow = 300
+
+    private var routeAnimator: ValueAnimator? = null
+    private val routeFadeDurationMs = 350L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -69,6 +83,16 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), OnMapReadyCallb
         googleMap.uiSettings.isCompassEnabled = true
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(QUITO_LOCATION, 12f))
 
+        // Aplicar estilo de mapa oscuro
+        try {
+            val success = googleMap.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(requireContext(), com.alertify.feature_reportes.R.raw.map_style)
+            )
+            if (!success) Log.e("DashboardFragment", "No se pudo aplicar el estilo de mapa")
+        } catch (e: Exception) {
+            Log.e("DashboardFragment", "Error aplicando estilo de mapa: ${e.message}")
+        }
+
         // Observadores unificados
         observarIncidentesDelEquipo()
         observarRuteoEAnimacion()
@@ -76,27 +100,35 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), OnMapReadyCallb
     }
 
     private fun observarIncidentesDelEquipo() {
-        // Cargar todos los datos del mapa (incidentes y heatmap)
-        reportesViewModel.loadAllMapData(ConfigManager.currentUserId)
+        // Cargar todos los datos del mapa via HeatmapViewModel (heatmap + marcadores + WebSocket)
+        heatmapViewModel.fetchMapData()
 
-        // 1. Observar marcadores de incidentes
-        reportesViewModel.allMarkersToDraw.observe(viewLifecycleOwner) { reports ->
-            if (::googleMap.isInitialized) {
-                // Dibujar incidentes usando el SharedMapDrawer oficial
+        heatmapViewModel.uiState.observe(viewLifecycleOwner) { state ->
+            if (!::googleMap.isInitialized) return@observe
+
+            // Actualizar contador de reportes globales
+            val tvReports = view?.findViewById<TextView>(R.id.tv_total_reports)
+            tvReports?.text = "Reportes aprobados globales: ${state.totalGlobalReports}"
+
+            // Dibujar heatmap
+            if (state.points.isNotEmpty()) {
+                SharedMapDrawer.drawHeatmap(googleMap, state.points)
+            }
+
+            // Dibujar marcadores de incidentes recientes
+            if (state.recentReports.isNotEmpty()) {
                 SharedMapDrawer.drawMarkers(
                     googleMap,
-                    reports,
+                    state.recentReports,
                     ConfigManager.currentUserId,
                     requireContext()
                 )
             }
-        }
 
-        // 2. Observar puntos del heatmap
-        reportesViewModel.heatmapPoints.observe(viewLifecycleOwner) { resource ->
-            if (resource is Resource.Success && ::googleMap.isInitialized)
-                // Dibujar heatmap usando el SharedMapDrawer oficial
-                SharedMapDrawer.drawHeatmap(googleMap, resource.data ?: emptyList())
+            // Mostrar errores
+            state.error?.let {
+                Toast.makeText(requireContext(), "⚠️ $it", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -147,36 +179,27 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), OnMapReadyCallb
                 ruteoViewModel.rutaPolyline.collect { encodedPolyline ->
                     if (!::googleMap.isInitialized) return@collect
 
-                    // Limpiar ruta anterior
-                    rutaPolylines.forEach { it.remove() }
-                    rutaPolylines.clear()
-
-                    if (encodedPolyline.isNullOrBlank()) return@collect
+                    if (encodedPolyline.isNullOrBlank()) {
+                        clearRutaPolyline()
+                        return@collect
+                    }
 
                     try {
                         val puntos = PolyUtil.decode(encodedPolyline)
-                        if (puntos.isEmpty()) return@collect
-
-                        val boundsBuilder = LatLngBounds.Builder()
-                        val maxPoints = 9500
-                        var index = 0
-
-                        while (index < puntos.size) {
-                            val endExclusive = minOf(index + maxPoints, puntos.size)
-                            val segment = ArrayList<LatLng>()
-                            if (index != 0) segment.add(puntos[index - 1])
-                            segment.addAll(puntos.subList(index, endExclusive))
-
-                            val polyline = googleMap.addPolyline(
-                                PolylineOptions().addAll(segment).width(routeWidth).color(routeBaseColor)
-                                    .startCap(RoundCap()).endCap(RoundCap()).jointType(JointType.ROUND).geodesic(true).zIndex(2f)
-                            )
-                            rutaPolylines.add(polyline)
-                            for (punto in segment) boundsBuilder.include(punto)
-                            index = endExclusive
+                        if (puntos.isEmpty()) {
+                            clearRutaPolyline()
+                            return@collect
                         }
 
-                        googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 150))
+                        rutaPuntos = puntos
+                        lastRouteIndex = 0
+
+                        val (newPolylines, boundsBuilder) = buildRoutePolylines(puntos)
+                        val bounds = boundsBuilder.build()
+                        val padding = 150
+
+                        googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding))
+                        replaceRutaPolyline(newPolylines)
                     } catch (ex: Exception) {
                         Log.e("DashboardFragment", "Error al dibujar ruta", ex)
                         Toast.makeText(requireContext(), "No se pudo dibujar la ruta.", Toast.LENGTH_SHORT).show()
@@ -206,6 +229,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), OnMapReadyCallb
                     liveLatLng ?: return@collect
                     if (!::googleMap.isInitialized) return@collect
 
+                    // 🔥 CRÍTICO: Solo dibujar el coche y centrar si estamos navegando
+                    if (!ruteoViewModel.isNavigationMode.value) return@collect
+
                     if (trackingUserMarker == null) {
                         // Crear el marcador del coche azul por primera vez
                         val icon = vectorToBitmapDescriptor(requireContext(), com.alertify.feature_ruteo.R.drawable.ruteo_ic_nav_user)
@@ -224,6 +250,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), OnMapReadyCallb
 
                     // Centrar la cámara suavemente en el coche
                     googleMap.animateCamera(CameraUpdateFactory.newLatLng(liveLatLng))
+                    updateRouteProgress(liveLatLng)
                 }
             }
         }
@@ -316,6 +343,157 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), OnMapReadyCallb
         val canvas = Canvas(bitmap)
         vectorDrawable.draw(canvas)
         return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
+    private fun clearRutaPolyline() {
+        routeAnimator?.cancel()
+        routeAnimator = null
+        rutaPolylines.forEach { it.remove() }
+        rutaPolylines.clear()
+        rutaPuntos = emptyList()
+        lastRouteIndex = 0
+    }
+
+    private fun buildRoutePolylines(puntos: List<LatLng>): Pair<List<Polyline>, LatLngBounds.Builder> {
+        val boundsBuilder = LatLngBounds.Builder()
+        val newPolylines = mutableListOf<Polyline>()
+
+        val maxPointsPerPolyline = 9500
+        var index = 0
+
+        while (index < puntos.size) {
+            val endExclusive = minOf(index + maxPointsPerPolyline, puntos.size)
+            val segment = ArrayList<LatLng>()
+
+            if (index != 0) segment.add(puntos[index - 1])
+            segment.addAll(puntos.subList(index, endExclusive))
+
+            val polyline = googleMap.addPolyline(
+                PolylineOptions()
+                    .addAll(segment)
+                    .width(routeWidth)
+                    .color(colorWithAlpha(routeBaseColor, 0))
+                    .startCap(RoundCap())
+                    .endCap(RoundCap())
+                    .jointType(JointType.ROUND)
+                    .geodesic(true)
+                    .zIndex(2f)
+            )
+            newPolylines.add(polyline)
+
+            for (punto in segment) boundsBuilder.include(punto)
+            index = endExclusive
+        }
+
+        return newPolylines to boundsBuilder
+    }
+
+    private fun replaceRutaPolyline(newPolylines: List<Polyline>) {
+        val oldPolylines = rutaPolylines.toList()
+        routeAnimator?.cancel()
+
+        if (oldPolylines.isEmpty()) {
+            newPolylines.forEach { it.color = colorWithAlpha(routeBaseColor, 255) }
+            rutaPolylines.clear()
+            rutaPolylines.addAll(newPolylines)
+            return
+        }
+
+        val animator = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = routeFadeDurationMs
+            addUpdateListener { animation ->
+                val fraction = animation.animatedValue as Float
+                val newAlpha = (fraction * 255).toInt()
+                val oldAlpha = ((1f - fraction) * 255).toInt()
+
+                newPolylines.forEach { it.color = colorWithAlpha(routeBaseColor, newAlpha) }
+                oldPolylines.forEach { it.color = colorWithAlpha(routeBaseColor, oldAlpha) }
+            }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    oldPolylines.forEach { it.remove() }
+                }
+
+                override fun onAnimationCancel(animation: Animator) {
+                    oldPolylines.forEach { it.remove() }
+                }
+            })
+        }
+
+        routeAnimator = animator
+        rutaPolylines.clear()
+        rutaPolylines.addAll(newPolylines)
+        animator.start()
+    }
+
+    private fun setRutaPolylineInstant(newPolylines: List<Polyline>) {
+        routeAnimator?.cancel()
+        rutaPolylines.forEach { it.remove() }
+        rutaPolylines.clear()
+        newPolylines.forEach { it.color = colorWithAlpha(routeBaseColor, 255) }
+        rutaPolylines.addAll(newPolylines)
+    }
+
+    private fun updateRouteProgress(currentLatLng: LatLng) {
+        if (rutaPuntos.size < 2) return
+        if (!::googleMap.isInitialized) return
+
+        var idx = PolyUtil.locationIndexOnPath(currentLatLng, rutaPuntos, false, routeProgressToleranceMeters)
+
+        if (idx < 0) {
+            idx = PolyUtil.locationIndexOnPath(currentLatLng, rutaPuntos, false, routeProgressToleranceMeters * 2)
+        }
+
+        if (idx < 0) {
+            val (closestIndex, closestDistance) = findClosestRouteIndex(currentLatLng)
+            if (closestIndex < 0 || closestDistance > routeProgressFallbackMaxDistanceMeters) return
+            idx = closestIndex
+        }
+
+        if (idx <= lastRouteIndex) return
+        if (idx - lastRouteIndex < routeProgressMinIndexStep && idx < rutaPuntos.lastIndex) return
+
+        val remaining = rutaPuntos.subList(idx, rutaPuntos.size)
+        if (remaining.size < 2) {
+            clearRutaPolyline()
+            return
+        }
+
+        val (newPolylines, _) = buildRoutePolylines(remaining)
+        setRutaPolylineInstant(newPolylines)
+        rutaPuntos = remaining
+        lastRouteIndex = 0
+    }
+
+    private fun findClosestRouteIndex(currentLatLng: LatLng): Pair<Int, Float> {
+        if (rutaPuntos.isEmpty()) return -1 to Float.MAX_VALUE
+
+        val start = (lastRouteIndex - 10).coerceAtLeast(0)
+        val end = (lastRouteIndex + routeProgressSearchWindow).coerceAtMost(rutaPuntos.lastIndex)
+
+        var bestIndex = -1
+        var bestDistance = Float.MAX_VALUE
+
+        for (i in start..end) {
+            val distance = distanceMetersBetween(currentLatLng, rutaPuntos[i])
+            if (distance < bestDistance) {
+                bestDistance = distance
+                bestIndex = i
+            }
+        }
+
+        return bestIndex to bestDistance
+    }
+
+    private fun distanceMetersBetween(a: LatLng, b: LatLng): Float {
+        val result = FloatArray(1)
+        Location.distanceBetween(a.latitude, a.longitude, b.latitude, b.longitude, result)
+        return result[0]
+    }
+
+    private fun colorWithAlpha(baseColor: Int, alpha: Int): Int {
+        val safeAlpha = alpha.coerceIn(0, 255)
+        return (baseColor and 0x00FFFFFF) or (safeAlpha shl 24)
     }
 
     companion object {

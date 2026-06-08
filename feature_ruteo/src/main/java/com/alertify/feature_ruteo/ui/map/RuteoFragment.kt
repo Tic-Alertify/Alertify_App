@@ -223,22 +223,28 @@ class RuteoFragment : Fragment() {
             } else {
                 rvSugerencias.visibility = View.GONE
             }
-        }.addOnFailureListener {
+        }.addOnFailureListener { exception ->
             rvSugerencias.visibility = View.GONE
+            android.util.Log.e("RuteoFragment", "Error en buscarSugerencias: ${exception.message}", exception)
+            Toast.makeText(requireContext(), "Error de API: ${exception.message}", Toast.LENGTH_LONG).show()
         }
     }
 
     private fun obtenerCoordenadasDelLugar(placeId: String) {
-        // En las versiones recientes del SDK es Place.Field.LOCATION, si usas una anterior cambia a LAT_LNG
+        // En las versiones recientes del SDK es Place.Field.LOCATION, LAT_LNG fue removido.
         val placeFields = listOf(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.LOCATION)
         val request = FetchPlaceRequest.builder(placeId, placeFields).build()
 
         placesClient.fetchPlace(request).addOnSuccessListener { response ->
-            response.place.location?.let { destino ->
+            val location = response.place.location
+            location?.let { destino ->
                 viewModel.setDestino(destino)
+            } ?: run {
+                Toast.makeText(requireContext(), "El lugar seleccionado no tiene coordenadas", Toast.LENGTH_SHORT).show()
             }
-        }.addOnFailureListener {
-            Toast.makeText(requireContext(), "No se pudo obtener la ubicación", Toast.LENGTH_SHORT).show()
+        }.addOnFailureListener { exception ->
+            android.util.Log.e("RuteoFragment", "Error en obtenerCoordenadasDelLugar: ${exception.message}", exception)
+            Toast.makeText(requireContext(), "Error al obtener ubicación: ${exception.message}", Toast.LENGTH_LONG).show()
         }
     }
 

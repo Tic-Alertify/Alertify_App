@@ -22,8 +22,8 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "API_BASE_URL", "\"http://192.168.100.35:3000/\"")
-            buildConfigField("String", "SOCKET_URL", "\"http://192.168.100.35:3000\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://wpxwd99t-3000.use.devtunnels.ms/\"")
+            buildConfigField("String", "SOCKET_URL", "\"https://wpxwd99t-3000.use.devtunnels.ms/\"")
         }
         release {
             buildConfigField("String", "API_BASE_URL", "\"https://api.alertify.com/\"")

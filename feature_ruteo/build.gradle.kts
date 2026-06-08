@@ -17,8 +17,18 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
+        debug {
+            buildConfigField("String", "BASE_URL", "\"http://192.168.100.72:3001/\"")
+            buildConfigField("String", "SOCKET_URL", "\"http://192.168.100.72:3001/\"")
+        }
         release {
+            buildConfigField("String", "BASE_URL", "\"https://api.ruteo.alertify.com/\"")
+            buildConfigField("String", "SOCKET_URL", "\"https://api.ruteo.alertify.com/\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

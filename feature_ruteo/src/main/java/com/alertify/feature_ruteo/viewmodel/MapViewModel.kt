@@ -159,7 +159,7 @@ class MapViewModel @Inject constructor(
                     _rutaPolyline.value = ruteoData.rutaGeometria
                 } else {
                     val excepcion = resultado.exceptionOrNull()
-                    _errorMessage.value = "Error al calcular la ruta. Intenta de nuevo."
+                    _errorMessage.value = "Error: ${excepcion?.message}"
                     Log.e("MapViewModel", "Fallo en el repositorio: ${excepcion?.message}")
                 }
             } catch (e: Exception) {

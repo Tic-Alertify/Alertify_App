@@ -17,7 +17,8 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     // Sprint 4: Procesa google-services.json para Firebase
-    id("com.google.gms.google-services")
+    // TODO: Re-enable this plugin after adding google-services.json to the app/ folder
+    // id("com.google.gms.google-services")
 }
 
 android {
@@ -85,10 +86,15 @@ dependencies {
 
     // Hilt — @AndroidEntryPoint en MainActivity y AlertifyMessagingService
     implementation(libs.hilt.android)
+    implementation(libs.navigation.fragment.ktx)
+    implementation(libs.navigation.ui.ktx)
     ksp(libs.hilt.compiler)
 
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // LocationTracker
+    implementation("com.google.android.gms:play-services-location:21.1.0")
 }

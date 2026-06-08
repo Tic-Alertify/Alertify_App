@@ -5,11 +5,16 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!-- Requerido en Android 13+ (API 33) para mostrar notificaciones push -->
+
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
     <application
-        android:name=".AlertifyApp" android:allowBackup="true"
+        android:name=".AlertifyApp"
+        android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -26,18 +31,13 @@
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize"> <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
-        <!--
-            Sprint 4 — T15: Receptor de Notificaciones Push FCM
-            Escucha eventos de Firebase Cloud Messaging para:
-              - Generar alertas visuales y sonoras cuando hay un incidente cercano
-              - Registrar/actualizar el token FCM cuando Firebase lo rota
-        -->
         <service
             android:name=".AlertifyMessagingService"
             android:exported="false">
@@ -46,6 +46,12 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name="com.alertify.feature_ruteo.location.TrackingService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
     </application>
 
-</manifest>
+</manifest>

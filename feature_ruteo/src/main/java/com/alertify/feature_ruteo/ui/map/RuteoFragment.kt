@@ -5,6 +5,7 @@ package com.alertify.feature_ruteo.ui.map
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
@@ -27,7 +28,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alertify.core.utils.Constants
 import com.alertify.feature_ruteo.R
-import com.alertify.core.ui.viewmodel.SharedMapViewModel
+import com.alertify.feature_ruteo.viewmodel.MapViewModel
+import com.alertify.feature_ruteo.location.TrackingService
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
@@ -44,9 +46,8 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class RuteoFragment : Fragment() {
 
-    // Usamos SharedMapViewModel (provisto por DashboardHostFragment)
-    // para comunicación entre Mapa y Ruteo
-    private val viewModel: SharedMapViewModel by activityViewModels()
+    // 🔥 Inyectamos TU MapViewModel a nivel de Activity para que el Dashboard lo escuche
+    private val viewModel: MapViewModel by activityViewModels()
 
     // Herramientas de Google
     private lateinit var placesClient: PlacesClient
@@ -131,7 +132,18 @@ class RuteoFragment : Fragment() {
             btnConfirmarUbicacion.visibility = View.GONE
             btnCambiarDestino.visibility = View.VISIBLE
 
-            // 🔥 Aquí alimentas el ViewModel. ¡El Dashboard se encargará de dibujar cuando esto termine!
+            // 1. Avisar al Dashboard que ponga el icono del coche azul (Modo Navegación)
+            viewModel.setNavigationMode(true)
+
+            // 2. Encender el motor de GPS en Segundo Plano (TrackingService)
+            val serviceIntent = Intent(requireContext(), TrackingService::class.java)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                requireContext().startForegroundService(serviceIntent)
+            } else {
+                requireContext().startService(serviceIntent)
+            }
+
+            // 3. Solicitar la ruta (El Dashboard se encargará de dibujarla)
             viewModel.solicitarRutaSegura()
         }
 
@@ -142,6 +154,13 @@ class RuteoFragment : Fragment() {
             ivClearText.visibility = View.GONE
             rvSugerencias.visibility = View.GONE
             placesAdapter.submitList(emptyList())
+
+            //  4. Avisar al Dashboard que devuelva la bandera verde estática
+            viewModel.setNavigationMode(false)
+
+            //  5. Apagar el motor de GPS en Segundo Plano para ahorrar batería
+            val serviceIntent = Intent(requireContext(), TrackingService::class.java)
+            requireContext().stopService(serviceIntent)
 
             viewModel.clearDestino()
 
@@ -192,7 +211,7 @@ class RuteoFragment : Fragment() {
     private fun buscarSugerencias(query: String) {
         val request = FindAutocompletePredictionsRequest.builder()
             .setQuery(query)
-            .setCountries("EC")
+            .setCountries("EC") // Corregido: setCountries (Plural)
             .setLocationRestriction(RectangularBounds.newInstance(Constants.PICHINCHA_BOUNDS))
             .build()
 
@@ -210,6 +229,7 @@ class RuteoFragment : Fragment() {
     }
 
     private fun obtenerCoordenadasDelLugar(placeId: String) {
+        // En las versiones recientes del SDK es Place.Field.LOCATION, si usas una anterior cambia a LAT_LNG
         val placeFields = listOf(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.LOCATION)
         val request = FetchPlaceRequest.builder(placeId, placeFields).build()
 

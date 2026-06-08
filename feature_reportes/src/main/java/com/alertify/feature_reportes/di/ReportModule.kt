@@ -8,17 +8,18 @@ import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import javax.inject.Singleton
 
-/**
- * Módulo Hilt para inyección de dependencias de ReportApiService.
- * 
- * NOTAS ARQUITECTÓNICAS:
- * - ReportRepository y ReportEventListener se auto-inyectan via @Inject constructor
- * - Gson y Retrofit vienen del módulo core (NetworkModule)
- * - Este módulo SOLO proporciona la interfaz ReportApiService
- */
 @Module
 @InstallIn(SingletonComponent::class)
 object ReportModule {
+
+    /*
+     * ─── CONFIGURACIÓN DE BACKENDS ───
+     * IPs y URLs de conexión:
+     * - Desarrollo (PC Local): http://192.168.100.35:3000/
+     * - Emulador Android: http://10.0.2.2:3000/
+     * - Producción: https://api.alertify.com/
+     * - WebSockets: http://192.168.100.35:3000
+     */
 
     @Provides
     @Singleton

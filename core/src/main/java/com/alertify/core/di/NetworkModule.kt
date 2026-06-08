@@ -28,6 +28,20 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    /*
+     * ─── CONFIGURACIÓN DE BACKENDS ───
+     * IPs y URLs de conexión:
+     * - Desarrollo (PC Local): http://192.168.100.35:3000/
+     * - Emulador Android: http://10.0.2.2:3000/
+     * - Producción: https://api.alertify.com/
+     * - WebSockets: http://192.168.100.35:3000
+     *
+     * Servicios por Módulo:
+     * - :core              -> AuthApi (Gestión de Sesión)
+     * - :feature_reportes  -> ReportApiService (Incidentes y Alertas)
+     * - :feature_ruteo     -> RuteoApiService (Rutas y Navegación)
+     */
+
     @Provides
     @Singleton
     fun provideSharedPreferences(

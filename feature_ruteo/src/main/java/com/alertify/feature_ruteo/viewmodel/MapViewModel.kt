@@ -63,6 +63,31 @@ class MapViewModel @Inject constructor(
     private val _alertLocation = MutableStateFlow<LatLng?>(null)
     val alertLocation: StateFlow<LatLng?> = _alertLocation.asStateFlow()
 
+    // Coordenada en vivo del usuario durante el viaje
+    private val _currentTrackingLocation = MutableStateFlow<LatLng?>(null)
+    val currentTrackingLocation: StateFlow<LatLng?> = _currentTrackingLocation.asStateFlow()
+
+    // Estado para saber si el viaje/rastreo está encendido
+    private val _isNavigationMode = MutableStateFlow(false)
+    val isNavigationMode: StateFlow<Boolean> = _isNavigationMode.asStateFlow()
+
+    // Rotación del usuario (Heading)
+    private val _origenHeading = MutableStateFlow<Float?>(null)
+    val origenHeading: StateFlow<Float?> = _origenHeading.asStateFlow()
+
+    fun updateTrackingLocation(latLng: LatLng) {
+        _currentTrackingLocation.value = latLng
+    }
+
+    fun setNavigationMode(active: Boolean) {
+        _isNavigationMode.value = active
+    }
+
+    fun updateHeading(heading: Float) {
+        _origenHeading.value = heading
+    }
+
+
     /** Llamar desde MainActivity cuando llega un intent de alerta push */
     fun setAlertLocation(lat: Double, lon: Double) {
         _alertLocation.value = LatLng(lat, lon)

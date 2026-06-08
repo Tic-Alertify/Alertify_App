@@ -35,8 +35,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), LoginNavigator {
-
-    // ─── Sprint 4: Inyección de dependencias para FCM y ubicación ────────────
     @Inject
     lateinit var reportApiService: ReportApiService
 
@@ -77,7 +75,7 @@ class MainActivity : AppCompatActivity(), LoginNavigator {
             }
         }
 
-        // Sprint 4: Manejar intent de notificación (usuario tocó una alerta push)
+        //  Manejar intent de notificación (usuario tocó una alerta push)
         handleAlertIntent(intent)
     }
 

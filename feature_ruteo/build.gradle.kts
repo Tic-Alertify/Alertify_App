@@ -23,8 +23,8 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "BASE_URL", "\"http://192.168.100.72:3001/\"")
-            buildConfigField("String", "SOCKET_URL", "\"http://192.168.100.72:3001/\"")
+            buildConfigField("String", "BASE_URL", "\"https://1vb7thbq-3001.brs.devtunnels.ms/\"")
+            buildConfigField("String", "SOCKET_URL", "\"https://1vb7thbq-3001.brs.devtunnels.ms/\"")
         }
         release {
             buildConfigField("String", "BASE_URL", "\"https://api.ruteo.alertify.com/\"")

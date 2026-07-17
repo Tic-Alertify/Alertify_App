@@ -26,8 +26,8 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "BASE_URL", "\"https://trvc410l-3000.brs.devtunnels.ms/\"")
-            buildConfigField("String", "SOCKET_URL", "\"https://trvc410l-3000.brs.devtunnels.ms/\"")
+            buildConfigField("String", "BASE_URL", "\"https://19crt6dl-3000.use.devtunnels.ms/\"")
+            buildConfigField("String", "SOCKET_URL", "\"https://19crt6dl-3000.use.devtunnels.ms/\"")
         }
         release {
             buildConfigField("String", "BASE_URL", "\"https://api.reportes.alertify.com/\"")

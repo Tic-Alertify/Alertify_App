@@ -7,11 +7,17 @@ interface TokenStorage {
     suspend fun saveRefreshToken(token: String)
     suspend fun getRefreshToken(): String?
 
+    suspend fun saveCurrentUserId(userId: Int)
+    suspend fun getCurrentUserId(): Int?
+
     fun getAccessTokenSync(): String?
     fun saveAccessTokenSync(token: String)
 
     fun getRefreshTokenSync(): String?
     fun saveRefreshTokenSync(token: String)
+
+    fun getCurrentUserIdSync(): Int?
+    fun saveCurrentUserIdSync(userId: Int)
 
     suspend fun clear()
     fun clearSync()

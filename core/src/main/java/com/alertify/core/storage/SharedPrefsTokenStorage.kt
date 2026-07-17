@@ -32,6 +32,15 @@ class SharedPrefsTokenStorage @Inject constructor(
         prefs.getString(KEY_REFRESH_TOKEN, null)?.takeIf { it.isNotBlank() }
     }
 
+    override suspend fun saveCurrentUserId(userId: Int) = withContext(Dispatchers.IO) {
+        prefs.edit().putInt(KEY_CURRENT_USER_ID, userId).apply()
+    }
+
+    override suspend fun getCurrentUserId(): Int? = withContext(Dispatchers.IO) {
+        val userId = prefs.getInt(KEY_CURRENT_USER_ID, -1)
+        userId.takeIf { it > 0 }
+    }
+
     override fun getAccessTokenSync(): String? {
         return prefs.getString(KEY_ACCESS_TOKEN, null)?.takeIf { it.isNotBlank() }
     }
@@ -48,17 +57,33 @@ class SharedPrefsTokenStorage @Inject constructor(
         prefs.edit().putString(KEY_REFRESH_TOKEN, token).apply()
     }
 
+    override fun getCurrentUserIdSync(): Int? {
+        val userId = prefs.getInt(KEY_CURRENT_USER_ID, -1)
+        return userId.takeIf { it > 0 }
+    }
+
+    override fun saveCurrentUserIdSync(userId: Int) {
+        prefs.edit().putInt(KEY_CURRENT_USER_ID, userId).apply()
+    }
+
     override suspend fun clear() = withContext(Dispatchers.IO) {
-        prefs.edit().clear().apply()
+        prefs.edit().remove(KEY_ACCESS_TOKEN)
+            .remove(KEY_REFRESH_TOKEN)
+            .remove(KEY_CURRENT_USER_ID)
+            .apply()
     }
 
     override fun clearSync() {
-        prefs.edit().clear().apply()
+        prefs.edit().remove(KEY_ACCESS_TOKEN)
+            .remove(KEY_REFRESH_TOKEN)
+            .remove(KEY_CURRENT_USER_ID)
+            .apply()
     }
 
     private companion object {
         const val PREFS_NAME = "alertify_auth_prefs"
         const val KEY_ACCESS_TOKEN = "access_token"
         const val KEY_REFRESH_TOKEN = "refresh_token"
+        const val KEY_CURRENT_USER_ID = "current_user_id"
     }
 }

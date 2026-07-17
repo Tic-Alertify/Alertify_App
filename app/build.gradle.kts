@@ -18,7 +18,7 @@ plugins {
     alias(libs.plugins.hilt)
     // Sprint 4: Procesa google-services.json para Firebase
     // TODO: Re-enable this plugin after adding google-services.json to the app/ folder
-    // id("com.google.gms.google-services")
+    id("com.google.gms.google-services")
 }
 
 android {

@@ -1,5 +1,6 @@
 package com.alertify.feature_reportes.data.api
 
+import com.alertify.feature_reportes.data.model.EnsureUserRequest
 import com.alertify.feature_reportes.data.model.HeatmapResponse
 import com.alertify.feature_reportes.data.model.ReportRequest
 import com.alertify.feature_reportes.data.model.ReportResponse
@@ -28,6 +29,9 @@ interface ReportApiService {
      * Registra el token FCM del dispositivo en el backend.
      * Llamar en: FirebaseMessagingService.onNewToken() + MainActivity.onStart()
      */
+    @POST("users/ensure")
+    suspend fun ensureUser(@Body body: EnsureUserRequest): Response<Map<String, Any>>
+
     @PATCH("users/{id}/fcm-token")
     suspend fun updateFcmToken(
         @Path("id") userId: Int,

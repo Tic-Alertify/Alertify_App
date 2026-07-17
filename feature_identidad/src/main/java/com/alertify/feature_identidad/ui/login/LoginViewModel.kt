@@ -57,12 +57,14 @@ class LoginViewModel @Inject constructor(
             if (BuildConfig.DEBUG) {
                 try {
                     // Simula tokens mock - sin validar credenciales
+                    val simulatedUserId = kotlin.math.abs(email.hashCode())
                     sessionManager.saveTokensSync(
                         accessToken = "debug-mock-token-${email.hashCode()}",
                         refreshToken = "debug-mock-refresh-${System.currentTimeMillis()}"
                     )
+                    sessionManager.saveCurrentUserIdSync(simulatedUserId)
                     _uiState.value = LoginUiState.Success
-                    Log.d(TAG, "DEBUG: Login simulado para $email")
+                    Log.d(TAG, "DEBUG: Login simulado para $email con userId=$simulatedUserId")
                     _events.emit(LoginEvent.NavigateToDashboard)
                     return@launch
                 } catch (e: Exception) {
@@ -75,8 +77,9 @@ class LoginViewModel @Inject constructor(
                 is ApiResult.Success -> {
                     try {
                         sessionManager.onLoginSuccess(
-                            result.data.accessToken,
-                            result.data.refreshToken
+                            accessToken = result.data.accessToken,
+                            refreshToken = result.data.refreshToken,
+                            userId = result.data.user.id
                         )
                         _uiState.value = LoginUiState.Success
                         _events.emit(LoginEvent.NavigateToDashboard)

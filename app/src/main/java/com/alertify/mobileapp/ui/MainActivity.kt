@@ -16,9 +16,11 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.NavHostFragment
 import com.alertify.core.session.SessionEvent
 import com.alertify.core.session.SessionEventBus
+import com.alertify.core.storage.AuthSessionManager
 import com.alertify.feature_identidad.navigation.LoginNavigator
 import com.alertify.feature_reportes.config.ConfigManager
 import com.alertify.feature_reportes.data.api.ReportApiService
+import com.alertify.feature_reportes.data.model.EnsureUserRequest
 import com.alertify.feature_reportes.data.model.UpdateFcmTokenRequest
 import com.alertify.feature_reportes.data.model.UpdateLocationRequest
 import com.alertify.feature_ruteo.viewmodel.MapViewModel
@@ -37,6 +39,9 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity(), LoginNavigator {
     @Inject
     lateinit var reportApiService: ReportApiService
+
+    @Inject
+    lateinit var authSessionManager: AuthSessionManager
 
     /**
      * MapViewModel compartido con DashboardFragment.
@@ -75,6 +80,8 @@ class MainActivity : AppCompatActivity(), LoginNavigator {
             }
         }
 
+        syncAuthenticatedUserFromSession()
+
         //  Manejar intent de notificación (usuario tocó una alerta push)
         handleAlertIntent(intent)
     }
@@ -94,6 +101,8 @@ class MainActivity : AppCompatActivity(), LoginNavigator {
     }
 
     override fun onLoginSuccess() {
+        syncAuthenticatedUserFromSession()
+
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.main_nav_host) as NavHostFragment
         val navController = navHostFragment.navController
@@ -114,6 +123,32 @@ class MainActivity : AppCompatActivity(), LoginNavigator {
 
         requestNotificationPermissionIfNeeded()
         updateLocationInBackend(userId)
+    }
+
+    private fun syncAuthenticatedUserFromSession() {
+        lifecycleScope.launch {
+            val userId = authSessionManager.getCurrentUserId() ?: authSessionManager.getCurrentUserIdSync()
+            ConfigManager.setCurrentUserId(userId)
+
+            if (userId != null && userId > 0) {
+                ensureUserExistsInReports(userId)
+            }
+        }
+    }
+
+    private fun ensureUserExistsInReports(userId: Int) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = reportApiService.ensureUser(EnsureUserRequest(userId))
+                if (response.isSuccessful) {
+                    Log.d(TAG, "Usuario sincronizado en reportes: $userId")
+                } else {
+                    Log.w(TAG, "No se pudo asegurar el usuario en reportes. Código: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "No se pudo sincronizar el usuario en reportes; se usará el id local", e)
+            }
+        }
     }
 
     /**

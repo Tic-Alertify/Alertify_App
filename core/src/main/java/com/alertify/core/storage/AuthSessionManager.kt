@@ -12,9 +12,12 @@ class AuthSessionManager @Inject constructor(
     private val tokenStorage: TokenStorage,
     private val authApi: AuthApi
 ) {
-    suspend fun onLoginSuccess(accessToken: String, refreshToken: String) {
+    suspend fun onLoginSuccess(accessToken: String, refreshToken: String, userId: Int? = null) {
         tokenStorage.saveAccessToken(accessToken)
         tokenStorage.saveRefreshToken(refreshToken)
+        if (userId != null) {
+            tokenStorage.saveCurrentUserId(userId)
+        }
     }
 
     suspend fun isLoggedIn(): Boolean {
@@ -36,6 +39,22 @@ class AuthSessionManager @Inject constructor(
 
     suspend fun getRefreshToken(): String? {
         return tokenStorage.getRefreshToken()
+    }
+
+    suspend fun saveCurrentUserId(userId: Int) {
+        tokenStorage.saveCurrentUserId(userId)
+    }
+
+    suspend fun getCurrentUserId(): Int? {
+        return tokenStorage.getCurrentUserId()
+    }
+
+    fun getCurrentUserIdSync(): Int? {
+        return tokenStorage.getCurrentUserIdSync()
+    }
+
+    fun saveCurrentUserIdSync(userId: Int) {
+        tokenStorage.saveCurrentUserIdSync(userId)
     }
 
     suspend fun clearSession() {

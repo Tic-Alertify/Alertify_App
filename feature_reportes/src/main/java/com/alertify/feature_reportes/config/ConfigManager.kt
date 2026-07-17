@@ -21,9 +21,19 @@ object ConfigManager {
     const val QUITO_LON_EAST = -78.350
 
     /**
-     * User identifier for API requests. Currently hardcoded; will be replaced with
-     * authenticated session stored in SharedPreferences after login implementation.
-     * TODO: Integrate with authentication system and persist via SharedPreferences.
+     * User identifier for API requests.
+     * Se sincroniza automáticamente después del login desde la sesión persistida.
+     * Se mantuvo el valor anterior comentado como referencia histórica.
      */
-    var currentUserId: Int = 1
+    // var currentUserId: Int = 1
+    var currentUserId: Int = 0
+        private set
+
+    fun setCurrentUserId(userId: Int?) {
+        currentUserId = userId?.takeIf { it > 0 } ?: 0
+    }
+
+    fun clearCurrentUserId() {
+        currentUserId = 0
+    }
 }

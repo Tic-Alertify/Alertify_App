@@ -21,6 +21,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.alertify.feature_reportes.utils.SharedMapDrawer
+import com.alertify.feature_reportes.utils.MapStyleManager
 import com.alertify.feature_ruteo.viewmodel.MapViewModel as RuteoViewModel
 import com.alertify.feature_reportes.viewmodel.HeatmapViewModel
 import com.alertify.feature_reportes.config.ConfigManager
@@ -83,15 +84,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), OnMapReadyCallb
         googleMap.uiSettings.isCompassEnabled = true
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(QUITO_LOCATION, 12f))
 
-        // Aplicar estilo de mapa oscuro
-        try {
-            val success = googleMap.setMapStyle(
-                MapStyleOptions.loadRawResourceStyle(requireContext(), com.alertify.feature_reportes.R.raw.map_style)
-            )
-            if (!success) Log.e("DashboardFragment", "No se pudo aplicar el estilo de mapa")
-        } catch (e: Exception) {
-            Log.e("DashboardFragment", "Error aplicando estilo de mapa: ${e.message}")
-        }
+        // ✅ Aplicar estilo de mapa consistente con todos los demás
+        MapStyleManager.initMapStyle(requireContext(), googleMap)
 
         // Observadores unificados
         observarIncidentesDelEquipo()

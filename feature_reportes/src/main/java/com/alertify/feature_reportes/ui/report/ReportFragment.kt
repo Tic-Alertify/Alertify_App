@@ -16,6 +16,7 @@ import androidx.navigation.fragment.findNavController
 import com.alertify.feature_reportes.R
 import com.alertify.feature_reportes.config.ConfigManager
 import com.alertify.feature_reportes.databinding.FragmentReportBinding
+import com.alertify.feature_reportes.utils.MapStyleManager
 import com.alertify.feature_reportes.utils.Resource
 import com.alertify.feature_reportes.utils.SharedMapDrawer
 import com.alertify.feature_reportes.viewmodel.ReportViewModel
@@ -87,6 +88,10 @@ class ReportFragment : Fragment(), OnMapReadyCallback {
         binding.fabMyLocation.setOnClickListener {
             centerMapOnUser()
         }
+        binding.fabToggleMapStyle.setOnClickListener {
+            MapStyleManager.toggleMapStyle(requireContext(), mMap)
+            updateMapStyleIcon()
+        }
     }
 
     private fun setupObservers() {
@@ -125,10 +130,7 @@ class ReportFragment : Fragment(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        try {
-            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style))
-        } catch (e: Exception) { }
-
+        setupMapStyle()
         centerMapOnUser()
 
         // ✅ Pasamos el UserId para que cargue mis reportes antiguos también
@@ -144,6 +146,18 @@ class ReportFragment : Fragment(), OnMapReadyCallback {
             hideKeyboard()
             binding.etDescription.clearFocus()
         }
+    }
+
+    private fun setupMapStyle() {
+        MapStyleManager.initMapStyle(requireContext(), mMap)
+        updateMapStyleIcon()
+    }
+
+    private fun updateMapStyleIcon() {
+        val isDark = MapStyleManager.isDarkMode(requireContext())
+        binding.fabToggleMapStyle.setImageResource(
+            if (isDark) R.drawable.ic_brightness_light else R.drawable.ic_brightness_dark
+        )
     }
 
     private fun validateMarkerDistance(marker: Marker) {

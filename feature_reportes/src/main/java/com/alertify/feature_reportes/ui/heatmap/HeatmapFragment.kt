@@ -12,6 +12,7 @@ import com.alertify.core.ui.viewmodel.SharedMapViewModel
 import com.alertify.feature_reportes.R
 import com.alertify.feature_reportes.config.ConfigManager
 import com.alertify.feature_reportes.databinding.FragmentHeatmapBinding
+import com.alertify.feature_reportes.utils.MapStyleManager
 import com.alertify.feature_reportes.utils.SharedMapDrawer
 import com.alertify.feature_reportes.viewmodel.HeatmapViewModel
 import com.google.android.gms.maps.*
@@ -48,6 +49,12 @@ class HeatmapFragment : Fragment(), OnMapReadyCallback {
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(this)
+        
+        // Botón flotante para cambiar estilo del mapa
+        binding.fabToggleMapStyle.setOnClickListener {
+            MapStyleManager.toggleMapStyle(requireContext(), mMap)
+            updateMapStyleIcon()
+        }
         
         // Configurar listeners de ruteo
         setupRuteoListeners()
@@ -228,14 +235,15 @@ class HeatmapFragment : Fragment(), OnMapReadyCallback {
     private fun Double.format(digits: Int) = "%.${digits}f".format(this)
 
     private fun setupMapStyle() {
-        try {
-            val success = mMap.setMapStyle(
-                MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style)
-            )
-            if (!success) Log.e("MAP_DEBUG", "No se pudo aplicar el JSON de estilo")
-        } catch (e: Exception) {
-            Log.e("MAP_DEBUG", "Error de estilo: ${e.message}")
-        }
+        MapStyleManager.initMapStyle(requireContext(), mMap)
+        updateMapStyleIcon()
+    }
+
+    private fun updateMapStyleIcon() {
+        val isDark = MapStyleManager.isDarkMode(requireContext())
+        binding.fabToggleMapStyle.setImageResource(
+            if (isDark) R.drawable.ic_brightness_light else R.drawable.ic_brightness_dark
+        )
     }
 
     override fun onDestroyView() {

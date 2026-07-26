@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.alertify.feature_reportes.R
 import com.alertify.feature_reportes.config.ConfigManager
 import com.alertify.feature_reportes.databinding.FragmentHistoryBinding
-import com.alertify.feature_reportes.utils.Resource
+import com.alertify.feature_reportes.utils.MapStyleManager
 import com.alertify.feature_reportes.utils.SharedMapDrawer
 import com.alertify.feature_reportes.viewmodel.MapViewModel
 import com.google.android.gms.maps.*
@@ -47,6 +47,10 @@ class HistoryFragment : Fragment(), OnMapReadyCallback {
 
     private fun setupUI() {
         binding.btnToggleView.setOnClickListener { toggleView() }
+        binding.fabToggleMapStyle.setOnClickListener {
+            MapStyleManager.toggleMapStyle(requireContext(), mMap)
+            updateMapStyleIcon()
+        }
     }
 
     private fun toggleView() {
@@ -99,11 +103,15 @@ class HistoryFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun setupMapStyle() {
-        try {
-            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style))
-        } catch (e: Exception) {
-            Log.e("MAP_DEBUG", "Error de estilo: ${e.message}")
-        }
+        MapStyleManager.initMapStyle(requireContext(), mMap)
+        updateMapStyleIcon()
+    }
+
+    private fun updateMapStyleIcon() {
+        val isDark = MapStyleManager.isDarkMode(requireContext())
+        binding.fabToggleMapStyle.setImageResource(
+            if (isDark) R.drawable.ic_brightness_light else R.drawable.ic_brightness_dark
+        )
     }
 
     private fun setupRecyclerView() {

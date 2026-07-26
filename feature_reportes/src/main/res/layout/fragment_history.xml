@@ -31,6 +31,64 @@
             android:paddingTop="80dp"
             android:paddingBottom="16dp"
             tools:listitem="@layout/item_report" />
+
+        <FrameLayout
+            android:id="@+id/empty_state_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <!-- Ícono de marca de agua de fondo (sutil) -->
+            <ImageView
+                android:layout_width="280dp"
+                android:layout_height="280dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_report"
+                android:alpha="0.08"
+                android:scaleType="centerInside" />
+
+            <!-- Contenedor del contenido -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingHorizontal="28dp"
+                android:paddingVertical="48dp">
+
+                <!-- Ícono principal -->
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_marginBottom="16dp"
+                    android:src="@drawable/ic_history"
+                    android:tint="@color/alertify_primary"
+                    android:alpha="0.6" />
+
+                <!-- Título -->
+                <TextView
+                    android:id="@+id/tvEmptyTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/history_empty_title"
+                    android:textColor="@color/alertify_primary"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:textAlignment="center"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Mensaje de apoyo -->
+                <TextView
+                    android:id="@+id/tvEmptyMessage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/history_empty_message"
+                    android:textAlignment="center"
+                    android:textColor="#757575"
+                    android:textSize="14sp"
+                    android:lineSpacingMultiplier="1.4" />
+            </LinearLayout>
+        </FrameLayout>
     </FrameLayout>
 
     <!-- Botón Moderno y Flotante (Tipo Pill) -->

@@ -71,6 +71,10 @@ class HistoryFragment : Fragment(), OnMapReadyCallback {
         viewModel.userReportsList.observe(viewLifecycleOwner) { reports ->
             binding.progressBar.visibility = View.GONE
             historyAdapter.updateData(reports)
+
+            val isEmpty = reports.isNullOrEmpty()
+            binding.rvHistory.visibility = if (isEmpty) View.GONE else View.VISIBLE
+            binding.emptyStateContainer.visibility = if (isEmpty) View.VISIBLE else View.GONE
         }
 
         // 2. ✅ OBSERVADOR DEL MAPA (Todo combinado)
